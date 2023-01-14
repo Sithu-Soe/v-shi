@@ -1,6 +1,10 @@
 package handler
 
 import (
+	"v-shi/cmd/back/graph"
+
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,16 +19,17 @@ func newGraphqlHandler(h *Handler) *graphqlHandler {
 }
 
 func (ctr *graphqlHandler) register() {
-	ctr.R.POST("/graphql", ctr.serveGraphQL)
+
+	group := ctr.R.Group("/graphql")
+	group.POST("", ctr.serveGraphQL)
+	group.GET("/play", ctr.playGraphQL)
 }
 
 // Defining the Graphql handler
 func (ctr *graphqlHandler) serveGraphQL(c *gin.Context) {
-	// NewExecutableSchema and Config are in the generated.go file
-	// Resolver is in the resolver.go file
-	// h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
+	handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}})).ServeHTTP(c.Writer, c.Request)
+}
 
-	// return func(c *gin.Context) {
-	// 	h.ServeHTTP(c.Writer, c.Request)
-	// }
+func (ctr *graphqlHandler) playGraphQL(c *gin.Context) {
+	playground.Handler("GraphQL", "/query").ServeHTTP(c.Writer, c.Request)
 }
