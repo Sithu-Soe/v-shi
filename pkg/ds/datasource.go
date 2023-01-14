@@ -2,18 +2,20 @@ package ds
 
 import (
 	"github.com/go-redis/redis/v8"
-	"go.mongodb.org/mongo-driver/mongo"
+	"gorm.io/gorm"
 )
 
 type DataSource struct {
+	DB  *gorm.DB
 	RDB *redis.Client
-	MDB *mongo.Client
+	// MDB *mongo.Database
 }
 
 func NewDataSource() *DataSource {
 	return &DataSource{
+		DB:  LoadDB(),
 		RDB: LoadRDB(),
-		MDB: LoadMDB(),
+		// MDB: LoadMDB(),
 	}
 
 }

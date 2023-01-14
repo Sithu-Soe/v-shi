@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func LoadMDB() *mongo.Client {
+func LoadMDB() *mongo.Database {
 	uri := os.Getenv("MONGODB_URI")
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
 	if err != nil {
@@ -19,5 +19,5 @@ func LoadMDB() *mongo.Client {
 		panic(err)
 	}
 
-	return client
+	return client.Database("v-shi")
 }

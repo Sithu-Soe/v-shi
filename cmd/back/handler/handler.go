@@ -2,6 +2,7 @@ package handler
 
 import (
 	"v-shi/pkg/ds"
+	"v-shi/pkg/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,4 +22,10 @@ func NewHandler(c *HConfig) *Handler {
 }
 
 func (h *Handler) Register() {
+	h.R.Use(middleware.Cors())
+
+	// GraphQL
+	graphqlHandler := newGraphqlHandler(h)
+	graphqlHandler.register()
+
 }
