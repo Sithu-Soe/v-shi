@@ -3,6 +3,7 @@
 # https://gqlgen.com/getting-started/
 
 scalar Time
+scalar Void
 
 type Category {
   id: Int!
@@ -12,6 +13,7 @@ type Category {
 }
 
 type Query {
+  category(id: Int!): Category!
   categories: CategoriesResp!
   # categories: [Category!]!
 }
@@ -21,8 +23,14 @@ type CategoriesResp {
   total: Int!
 }
 
+input UpdateCategory {
+  id: Int!
+  name: String!
+}
+
 type Mutation {
   createCategory(name: String!): Category!
+  updateCategory(input: UpdateCategory!): Void
 }
 
 # type Todo {

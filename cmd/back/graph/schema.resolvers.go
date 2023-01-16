@@ -48,6 +48,24 @@ func (r *mutationResolver) CreateCategory(ctx context.Context, name string) (*mo
 	return &resp, nil
 }
 
+// UpdateCategory is the resolver for the updateCategory field.
+func (r *mutationResolver) UpdateCategory(ctx context.Context, input model.UpdateCategory) (*string, error) {
+	err := r.Repo.Category.UpdateByFields(ctx, &models.UpdateFields{
+		Field: "id",
+		Value: input.ID,
+		Data: map[string]any{
+			"name": input.Name,
+		},
+	})
+	return nil, err
+
+}
+
+// Category is the resolver for the category field.
+func (r *queryResolver) Category(ctx context.Context, id int) (*model.Category, error) {
+	return r.Repo.Category.FindByField(ctx, "id", id)
+}
+
 // Categories is the resolver for the categories field.
 func (r *queryResolver) Categories(ctx context.Context) (*model.CategoriesResp, error) {
 	categories, total, err := r.Repo.Category.All(ctx)
