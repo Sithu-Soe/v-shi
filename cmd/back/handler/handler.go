@@ -3,12 +3,14 @@ package handler
 import (
 	"v-shi/pkg/ds"
 	"v-shi/pkg/middleware"
+	"v-shi/pkg/repository"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
-	R *gin.Engine
+	R    *gin.Engine
+	repo *repository.Repository
 }
 type HConfig struct {
 	R  *gin.Engine
@@ -16,8 +18,12 @@ type HConfig struct {
 }
 
 func NewHandler(c *HConfig) *Handler {
+	repo := repository.NewRepository(&repository.RepoConfig{
+		DS: c.DS,
+	})
 	return &Handler{
-		R: c.R,
+		R:    c.R,
+		repo: repo,
 	}
 }
 

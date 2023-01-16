@@ -3,7 +3,7 @@ package ds
 import (
 	"fmt"
 	"os"
-	"v-shi/pkg/model"
+	"v-shi/pkg/models"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -31,11 +31,11 @@ func LoadDB() *gorm.DB {
 	}
 
 	err = db.AutoMigrate(
-		&model.Category{},
-		&model.Shop{},
-		&model.Location{},
-		&model.Food{},
-		&model.FoodImage{},
+		&models.Category{},
+		&models.Shop{},
+		&models.Location{},
+		&models.Food{},
+		&models.FoodImage{},
 	)
 
 	if err != nil {
