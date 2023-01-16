@@ -6,18 +6,58 @@ package graph
 
 import (
 	"context"
-	"fmt"
 	"v-shi/cmd/back/graph/model"
+	"v-shi/pkg/models"
+
+	"github.com/jinzhu/copier"
 )
 
 // CreateCategory is the resolver for the createCategory field.
 func (r *mutationResolver) CreateCategory(ctx context.Context, name string) (*model.Category, error) {
-	return nil, nil
+	category := models.Category{
+		Name: name,
+	}
+	if err := r.Repo.Category.Create(ctx, &category); err != nil {
+		return nil, err
+	}
+
+	resp := model.Category{}
+
+	if err := copier.CopyWithOption(&resp, &category, copier.Option{
+		IgnoreEmpty: false,
+		DeepCopy:    true,
+		// Converters: []copier.TypeConverter{
+		// 	{
+		// 		SrcType: time.Time{},
+		// 		DstType: copier.String,
+		// 		Fn: func(src interface{}) (interface{}, error) {
+		// 			s, ok := src.(time.Time)
+
+		// 			if !ok {
+		// 				return nil, errors.New("src type not matching")
+		// 			}
+
+		// 			return s.Format(time.RFC3339), nil
+		// 		},
+		// 	},
+		// },
+	}); err != nil {
+		return nil, err
+	}
+
+	return &resp, nil
 }
 
 // Categories is the resolver for the categories field.
-func (r *queryResolver) Categories(ctx context.Context) ([]*model.Category, error) {
-	panic(fmt.Errorf("not implemented: Categories - categories"))
+func (r *queryResolver) Categories(ctx context.Context) (*model.CategoriesResp, error) {
+	categories, total, err := r.Repo.Category.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &model.CategoriesResp{
+		List:  categories,
+		Total: int(total),
+	}, nil
 }
 
 // Mutation returns MutationResolver implementation.

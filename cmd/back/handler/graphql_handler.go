@@ -16,7 +16,8 @@ type graphqlHandler struct {
 
 func newGraphqlHandler(h *Handler) *graphqlHandler {
 	return &graphqlHandler{
-		R: h.R,
+		R:    h.R,
+		repo: h.repo,
 	}
 }
 
@@ -36,5 +37,5 @@ func (ctr *graphqlHandler) serveGraphQL(c *gin.Context) {
 }
 
 func (ctr *graphqlHandler) playGraphQL(c *gin.Context) {
-	playground.Handler("GraphQL", "/query").ServeHTTP(c.Writer, c.Request)
+	playground.Handler("GraphQL", "/graphql").ServeHTTP(c.Writer, c.Request)
 }

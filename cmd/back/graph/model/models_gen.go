@@ -2,9 +2,18 @@
 
 package model
 
+import (
+	"time"
+)
+
+type CategoriesResp struct {
+	List  []*Category `json:"list"`
+	Total int         `json:"total"`
+}
+
 type Category struct {
-	ID        string `json:"id"`
-	Name      string `json:"name"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	ID        int       `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

@@ -7,10 +7,10 @@ require (
 	github.com/gin-gonic/gin v1.8.2
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/jinzhu/copier v0.3.5
 	github.com/joho/godotenv v1.4.0
 	github.com/vektah/gqlparser/v2 v2.5.1
 	go.mongodb.org/mongo-driver v1.11.1
-	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 	gorm.io/driver/mysql v1.4.5
 	gorm.io/gorm v1.24.3
 )

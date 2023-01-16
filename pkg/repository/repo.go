@@ -3,7 +3,8 @@ package repository
 import "v-shi/pkg/ds"
 
 type Repository struct {
-	DS *ds.DataSource
+	DS       *ds.DataSource
+	Category *categoryRepository
 }
 type RepoConfig struct {
 	DS *ds.DataSource
@@ -11,6 +12,7 @@ type RepoConfig struct {
 
 func NewRepository(rConfig *RepoConfig) *Repository {
 	return &Repository{
-		DS: rConfig.DS,
+		DS:       rConfig.DS,
+		Category: newCategoryRepository(rConfig),
 	}
 }

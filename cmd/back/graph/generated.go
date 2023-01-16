@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
+	"time"
 	"v-shi/cmd/back/graph/model"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -45,6 +46,11 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	CategoriesResp struct {
+		List  func(childComplexity int) int
+		Total func(childComplexity int) int
+	}
+
 	Category struct {
 		CreatedAt func(childComplexity int) int
 		ID        func(childComplexity int) int
@@ -65,7 +71,7 @@ type MutationResolver interface {
 	CreateCategory(ctx context.Context, name string) (*model.Category, error)
 }
 type QueryResolver interface {
-	Categories(ctx context.Context) ([]*model.Category, error)
+	Categories(ctx context.Context) (*model.CategoriesResp, error)
 }
 
 type executableSchema struct {
@@ -82,6 +88,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "CategoriesResp.list":
+		if e.complexity.CategoriesResp.List == nil {
+			break
+		}
+
+		return e.complexity.CategoriesResp.List(childComplexity), true
+
+	case "CategoriesResp.total":
+		if e.complexity.CategoriesResp.Total == nil {
+			break
+		}
+
+		return e.complexity.CategoriesResp.Total(childComplexity), true
 
 	case "Category.created_at":
 		if e.complexity.Category.CreatedAt == nil {
@@ -284,6 +304,101 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
+func (ec *executionContext) _CategoriesResp_list(ctx context.Context, field graphql.CollectedField, obj *model.CategoriesResp) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CategoriesResp_list(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.List, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Category)
+	fc.Result = res
+	return ec.marshalOCategory2ᚕᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCategory(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CategoriesResp_list(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CategoriesResp",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Category_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Category_name(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Category_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Category_updated_at(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Category", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CategoriesResp_total(ctx context.Context, field graphql.CollectedField, obj *model.CategoriesResp) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CategoriesResp_total(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Total, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CategoriesResp_total(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CategoriesResp",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Category_id(ctx context.Context, field graphql.CollectedField, obj *model.Category) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Category_id(ctx, field)
 	if err != nil {
@@ -310,9 +425,9 @@ func (ec *executionContext) _Category_id(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Category_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -322,7 +437,7 @@ func (ec *executionContext) fieldContext_Category_id(ctx context.Context, field 
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -398,9 +513,9 @@ func (ec *executionContext) _Category_created_at(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalNDateTime2string(ctx, field.Selections, res)
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Category_created_at(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -410,7 +525,7 @@ func (ec *executionContext) fieldContext_Category_created_at(ctx context.Context
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type DateTime does not have child fields")
+			return nil, errors.New("field of type Time does not have child fields")
 		},
 	}
 	return fc, nil
@@ -442,9 +557,9 @@ func (ec *executionContext) _Category_updated_at(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalNDateTime2string(ctx, field.Selections, res)
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Category_updated_at(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -454,7 +569,7 @@ func (ec *executionContext) fieldContext_Category_updated_at(ctx context.Context
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type DateTime does not have child fields")
+			return nil, errors.New("field of type Time does not have child fields")
 		},
 	}
 	return fc, nil
@@ -551,9 +666,9 @@ func (ec *executionContext) _Query_categories(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.Category)
+	res := resTmp.(*model.CategoriesResp)
 	fc.Result = res
-	return ec.marshalNCategory2ᚕᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCategoryᚄ(ctx, field.Selections, res)
+	return ec.marshalNCategoriesResp2ᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCategoriesResp(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_categories(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -564,16 +679,12 @@ func (ec *executionContext) fieldContext_Query_categories(ctx context.Context, f
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Category_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Category_name(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Category_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Category_updated_at(ctx, field)
+			case "list":
+				return ec.fieldContext_CategoriesResp_list(ctx, field)
+			case "total":
+				return ec.fieldContext_CategoriesResp_total(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Category", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type CategoriesResp", field.Name)
 		},
 	}
 	return fc, nil
@@ -2489,6 +2600,38 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** object.gotpl ****************************
 
+var categoriesRespImplementors = []string{"CategoriesResp"}
+
+func (ec *executionContext) _CategoriesResp(ctx context.Context, sel ast.SelectionSet, obj *model.CategoriesResp) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, categoriesRespImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CategoriesResp")
+		case "list":
+
+			out.Values[i] = ec._CategoriesResp_list(ctx, field, obj)
+
+		case "total":
+
+			out.Values[i] = ec._CategoriesResp_total(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var categoryImplementors = []string{"Category"}
 
 func (ec *executionContext) _Category(ctx context.Context, sel ast.SelectionSet, obj *model.Category) graphql.Marshaler {
@@ -2975,52 +3118,22 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNCategory2vᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCategory(ctx context.Context, sel ast.SelectionSet, v model.Category) graphql.Marshaler {
-	return ec._Category(ctx, sel, &v)
+func (ec *executionContext) marshalNCategoriesResp2vᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCategoriesResp(ctx context.Context, sel ast.SelectionSet, v model.CategoriesResp) graphql.Marshaler {
+	return ec._CategoriesResp(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNCategory2ᚕᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCategoryᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Category) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
+func (ec *executionContext) marshalNCategoriesResp2ᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCategoriesResp(ctx context.Context, sel ast.SelectionSet, v *model.CategoriesResp) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
 	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNCategory2ᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCategory(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
+	return ec._CategoriesResp(ctx, sel, v)
+}
 
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
+func (ec *executionContext) marshalNCategory2vᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCategory(ctx context.Context, sel ast.SelectionSet, v model.Category) graphql.Marshaler {
+	return ec._Category(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNCategory2ᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCategory(ctx context.Context, sel ast.SelectionSet, v *model.Category) graphql.Marshaler {
@@ -3033,28 +3146,13 @@ func (ec *executionContext) marshalNCategory2ᚖvᚑshiᚋcmdᚋbackᚋgraphᚋm
 	return ec._Category(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNDateTime2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalString(v)
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNDateTime2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalString(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalID(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalID(v)
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -3070,6 +3168,21 @@ func (ec *executionContext) unmarshalNString2string(ctx context.Context, v inter
 
 func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
 	res := graphql.MarshalString(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
+	res, err := graphql.UnmarshalTime(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
+	res := graphql.MarshalTime(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -3355,6 +3468,54 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOCategory2ᚕᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCategory(ctx context.Context, sel ast.SelectionSet, v []*model.Category) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOCategory2ᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCategory(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOCategory2ᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCategory(ctx context.Context, sel ast.SelectionSet, v *model.Category) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Category(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
