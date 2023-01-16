@@ -12,20 +12,27 @@ type Category {
   updated_at: Time!
 }
 
-type Query {
-  category(id: Int!): Category!
-  categories: CategoriesResp!
-  # categories: [Category!]!
-}
-
 type CategoriesResp {
   list: [Category!]!
   total: Int!
 }
 
+input FilterCatrgory {
+  id: Int
+  name: String
+  start_time: String
+  end_time: String
+}
+
 input UpdateCategory {
   id: Int!
   name: String!
+}
+
+type Query {
+  category(id: Int!): Category!
+  categories(input: FilterCatrgory!): CategoriesResp!
+  # categories: [Category!]!
 }
 
 type Mutation {

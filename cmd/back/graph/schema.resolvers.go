@@ -58,7 +58,6 @@ func (r *mutationResolver) UpdateCategory(ctx context.Context, input model.Updat
 		},
 	})
 	return nil, err
-
 }
 
 // Category is the resolver for the category field.
@@ -67,8 +66,8 @@ func (r *queryResolver) Category(ctx context.Context, id int) (*model.Category, 
 }
 
 // Categories is the resolver for the categories field.
-func (r *queryResolver) Categories(ctx context.Context) (*model.CategoriesResp, error) {
-	categories, total, err := r.Repo.Category.All(ctx)
+func (r *queryResolver) Categories(ctx context.Context, input model.FilterCatrgory) (*model.CategoriesResp, error) {
+	categories, total, err := r.Repo.Category.All(ctx, &input)
 	if err != nil {
 		return nil, err
 	}

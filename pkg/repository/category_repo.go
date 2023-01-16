@@ -36,9 +36,21 @@ func (r *categoryRepository) UpdateByFields(ctx context.Context, updateFields *m
 	return db.Updates(updateFields.Data).Error
 }
 
-func (r *categoryRepository) All(ctx context.Context) ([]*model.Category, int64, error) {
+func (r *categoryRepository) All(ctx context.Context, input *model.FilterCatrgory) ([]*model.Category, int64, error) {
 	list := make([]*model.Category, 0)
 	tb := r.db.WithContext(ctx).Debug().Model(&models.Category{})
+	if input.ID != nil {
+		tb.Where("id", input.ID)
+	}
+
+	if input.Name != nil {
+		tb.Where("name LIKE ?", "%"+*input.Name+"%")
+	}
+
+	if input.StartTime != nil && input.EndTime != nil {
+		tb.Where("created_at BETWEEN ? AND ?", input.StartTime, input.EndTime)
+	}
+
 	var total int64
 	tb.Count(&total)
 	if err := tb.Find(&list).Error; err != nil {

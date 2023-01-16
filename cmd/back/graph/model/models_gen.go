@@ -18,6 +18,13 @@ type Category struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type FilterCatrgory struct {
+	ID        *int    `json:"id"`
+	Name      *string `json:"name"`
+	StartTime *string `json:"start_time"`
+	EndTime   *string `json:"end_time"`
+}
+
 type UpdateCategory struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
