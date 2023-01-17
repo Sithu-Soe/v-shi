@@ -12,6 +12,7 @@ import (
 	"v-shi/cmd/back/handler"
 	_ "v-shi/conf"
 	"v-shi/pkg/ds"
+	_ "v-shi/pkg/miio"
 
 	"github.com/gin-gonic/gin"
 )

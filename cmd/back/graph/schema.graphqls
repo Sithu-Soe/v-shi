@@ -4,6 +4,7 @@
 
 scalar Time
 scalar Void
+scalar Upload
 
 type Category {
   id: Int!
@@ -29,15 +30,50 @@ input UpdateCategory {
   name: String!
 }
 
+
+# SHOP
+type Shop {
+  id: Int!
+  name: String!
+  logo_filename: String!
+  created_at: Time!
+  updated_at: Time!
+}
+
+input FilterShop {
+  id: Int
+  name: String
+  start_time: String
+  end_time: String
+}
+
+type ShopsResp {
+  list: [Shop!]!
+  total: Int!
+}
+
+input createShop {
+  name: String!
+  file: Upload!
+}
+
 type Query {
   category(id: Int!): Category!
   categories(input: FilterCatrgory!): CategoriesResp!
   # categories: [Category!]!
+
+  shop(id: Int!): Shop!
+  shops(input: FilterShop): ShopsResp!
+  FileLogo(logo_filename: String!): String!
 }
 
 type Mutation {
+  # category
   createCategory(name: String!): Category!
   updateCategory(input: UpdateCategory!): Void
+
+  # shop
+  createShop(input: createShop!): Shop!
 }
 
 # type Todo {

@@ -2,8 +2,11 @@ package conf
 
 import (
 	"crypto/rsa"
+	"errors"
+	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/joho/godotenv"
@@ -12,6 +15,8 @@ import (
 var (
 	PrivateKey *rsa.PrivateKey
 	PublicKey  *rsa.PublicKey
+
+	FHostName string
 )
 
 func init() {
@@ -51,5 +56,22 @@ func init() {
 		log.Fatalf("error on parsing public key : %v\n", err)
 	}
 	PublicKey = publicKey
+
+	path := "storage"
+	for _, p := range []string{"shop/images", "shop/videos", "food/images", "food/videos"} {
+		fullPath := path + "/" + p
+		if _, err := os.Stat(fullPath); err != nil {
+			if errors.Is(err, os.ErrNotExist) || strings.Contains(err.Error(), "no such file or directory") {
+				err := os.MkdirAll(fullPath, os.ModePerm)
+				if err != nil {
+					fmt.Println(err)
+				}
+
+			}
+		}
+
+	}
+
+	FHostName = os.Getenv("FRONT_HOSTNAME")
 
 }

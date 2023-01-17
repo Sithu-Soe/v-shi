@@ -34,4 +34,8 @@ func (h *Handler) Register() {
 	graphqlHandler := newGraphqlHandler(h)
 	graphqlHandler.register()
 
+	// shop
+	shopHandler := newShopHandler(h)
+	shopHandler.register()
+
 }

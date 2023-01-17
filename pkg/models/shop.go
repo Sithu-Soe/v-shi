@@ -1,13 +1,22 @@
 package models
 
 import (
+	"fmt"
+	"v-shi/conf"
+
 	"gorm.io/gorm"
 )
 
 type Shop struct {
 	gorm.Model
-	Name     string `gorm:"column:name;type:varchar(150);not null" json:"name"`
-	LogoPath string `gorm:"column:logo_path;type:varchar(255)" json:"logo_path"`
+	Name         string `gorm:"column:name;type:varchar(150);not null" json:"name"`
+	LogoFilename string `gorm:"column:logo_filename;type:varchar(255)" json:"logo_filename"`
+	URL          string `gorm:"-" json:"url"`
+}
+
+func (s *Shop) AfterFind(tx *gorm.DB) (err error) {
+	s.URL = fmt.Sprintf("http://%v/shop/images/%v", conf.FHostName, s.LogoFilename)
+	return
 }
 
 type ShopOwner struct {
