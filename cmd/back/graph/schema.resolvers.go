@@ -13,6 +13,7 @@ import (
 	"image"
 	"image/jpeg"
 	"image/png"
+	"log"
 	"os"
 	"path/filepath"
 	"v-shi/cmd/back/graph/model"
@@ -23,6 +24,7 @@ import (
 	"github.com/anthonynsimon/bild/transform"
 	"github.com/jinzhu/copier"
 	minio "github.com/minio/minio-go/v7"
+	"gorm.io/gorm"
 )
 
 // CreateCategory is the resolver for the createCategory field.
@@ -290,6 +292,57 @@ func (r *mutationResolver) DeleteShopLocations(ctx context.Context, ids []int) (
 	return nil, r.Repo.Shop.DeleteManyShopLocations(ctx, idsStr)
 }
 
+// CreateFood is the resolver for the createFood field.
+func (r *mutationResolver) CreateFood(ctx context.Context, input model.CreateFood) (*string, error) {
+
+	if len(input.CategoryIds) != 0 {
+		total, err := r.Repo.Category.Count(ctx, utils.IdsIntToInCon(input.CategoryIds))
+		if err != nil {
+			return nil, err
+		}
+
+		log.Println(total)
+
+		if int(total) != len(input.CategoryIds) {
+			return nil, fmt.Errorf("invalid category id")
+		}
+	}
+
+	food := models.Food{
+		Name:   input.Name,
+		ShopID: uint64(input.ShopID),
+	}
+
+	if input.Description != nil {
+		food.Description = *input.Description
+	}
+
+	categories := make([]*models.Category, 0)
+	for _, v := range input.CategoryIds {
+		categories = append(categories, &models.Category{
+			Model: gorm.Model{
+				ID: uint(v),
+			},
+		})
+	}
+
+	if err := r.Repo.Food.Create(ctx, &food, categories); err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// UpdateFood is the resolver for the updateFood field.
+func (r *mutationResolver) UpdateFood(ctx context.Context, input model.UpdateFood) (*string, error) {
+	panic(fmt.Errorf("not implemented: UpdateFood - updateFood"))
+}
+
+// DeleteFoods is the resolver for the deleteFoods field.
+func (r *mutationResolver) DeleteFoods(ctx context.Context, ids []int) (*string, error) {
+	panic(fmt.Errorf("not implemented: DeleteFoods - deleteFoods"))
+}
+
 // Categories is the resolver for the categories field.
 func (r *queryResolver) Categories(ctx context.Context, input model.FilterCategory) (*model.CategoryListResp, error) {
 	categories, total, err := r.Repo.Category.FindAll(ctx, &input)
@@ -360,6 +413,12 @@ func (r *queryResolver) ShopLocations(ctx context.Context, input model.FilterSho
 		List:  list,
 		Total: int(total),
 	}, nil
+}
+
+// Foods is the resolver for the foods field.
+func (r *queryResolver) Foods(ctx context.Context, input model.FilterFood) (*model.FoodListResponse, error) {
+	// r.Repo.
+	panic("hehe")
 }
 
 // FileLogo is the resolver for the FileLogo field.

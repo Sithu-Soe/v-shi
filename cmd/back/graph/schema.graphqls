@@ -51,21 +51,6 @@ input FilterCategory {
 #### Category END
 
 
-#### Food Start
-type Food {
-  id: Int!
-  name: String!
-  description: String!
-  shop_id: Int!
-  created_at: Time!
-  updated_at: Time!
-  shop: Shop!
-  categories: [Category!]!
-}
-#### Food End
-
-
-
 #### SHOP OWNER START
 type ShopOwner {
   id: Int!
@@ -207,6 +192,53 @@ input updateShopLocation {
 #### SHOP LOCATION END
 
 
+#### Food START
+type Food {
+  id: Int!
+  name: String!
+  description: String
+  created_at: Time!
+  updated_at: Time!
+  shop_id: Int!
+  shop: Shop!
+  categories: [Category]
+}
+
+type FoodListResponse {
+  list: [Food!]!
+  total: Int!
+}
+
+input filterFood {
+  id: Int
+  name: String
+  description: String
+  shop_id: Int
+  shop_name: String
+  category_id: Int
+  category_name: String
+  page: Int!
+  page_size: Int!
+}
+
+input createFood {
+  name: String!
+  description: String
+  shop_id: Int!
+  category_ids: [Int!]
+}
+
+input updateFood {
+  id: Int!
+  name: String
+  description: String
+  shop_id: Int
+  category_ids: [Int]
+}
+#### Food END
+
+
+
 
 type Query {
   # category
@@ -221,8 +253,11 @@ type Query {
 
   # shop Locations
   shopLocations(input: filterShopLocation!): ShopLocationListResp!
+  
+  # food
+  foods(input: filterFood!): FoodListResponse!
 
-
+  # TEST
   FileLogo(logo_filename: String!): String!
 }
 
@@ -246,6 +281,11 @@ type Mutation {
   createShopLocation(input: createShopLocation!): Void
   updateShopLocation(input: updateShopLocation!): Void
   deleteShopLocations(ids: [Int!]!): Void
+
+  # food
+  createFood(input: createFood!): Void
+  updateFood(input: updateFood!): Void
+  deleteFoods(ids: [Int!]!): Void
 }
 
 # type Todo {

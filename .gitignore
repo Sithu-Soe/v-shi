@@ -3,6 +3,6 @@ rsa_private.pem
 rsa_public.pem
 maintest.go
 storage/*
-dump.rdb
 
 secret.txt
+dump.rdb

@@ -77,16 +77,24 @@ type ComplexityRoot struct {
 		UpdatedAt   func(childComplexity int) int
 	}
 
+	FoodListResponse struct {
+		List  func(childComplexity int) int
+		Total func(childComplexity int) int
+	}
+
 	Mutation struct {
 		CreateCategory      func(childComplexity int, name string) int
+		CreateFood          func(childComplexity int, input model.CreateFood) int
 		CreateShop          func(childComplexity int, input model.CreateShop) int
 		CreateShopLocation  func(childComplexity int, input model.CreateShopLocation) int
 		CreateShopOwner     func(childComplexity int, input model.CreateShopOwner) int
 		DeleteCategories    func(childComplexity int, ids []int) int
+		DeleteFoods         func(childComplexity int, ids []int) int
 		DeleteShopLocations func(childComplexity int, ids []int) int
 		DeleteShopOwners    func(childComplexity int, ids []int) int
 		DeleteShops         func(childComplexity int, ids []int) int
 		UpdateCategory      func(childComplexity int, input model.UpdateCategory) int
+		UpdateFood          func(childComplexity int, input model.UpdateFood) int
 		UpdateShop          func(childComplexity int, input model.UpdateShop) int
 		UpdateShopLocation  func(childComplexity int, input model.UpdateShopLocation) int
 		UpdateShopOwner     func(childComplexity int, input model.UpdateShopOwner) int
@@ -95,6 +103,7 @@ type ComplexityRoot struct {
 	Query struct {
 		Categories    func(childComplexity int, input model.FilterCategory) int
 		FileLogo      func(childComplexity int, logoFilename string) int
+		Foods         func(childComplexity int, input model.FilterFood) int
 		ShopLocations func(childComplexity int, input model.FilterShopLocation) int
 		ShopOwners    func(childComplexity int, input model.FilterShopOwner) int
 		Shops         func(childComplexity int, input model.FilterShop) int
@@ -158,12 +167,16 @@ type MutationResolver interface {
 	CreateShopLocation(ctx context.Context, input model.CreateShopLocation) (*string, error)
 	UpdateShopLocation(ctx context.Context, input model.UpdateShopLocation) (*string, error)
 	DeleteShopLocations(ctx context.Context, ids []int) (*string, error)
+	CreateFood(ctx context.Context, input model.CreateFood) (*string, error)
+	UpdateFood(ctx context.Context, input model.UpdateFood) (*string, error)
+	DeleteFoods(ctx context.Context, ids []int) (*string, error)
 }
 type QueryResolver interface {
 	Categories(ctx context.Context, input model.FilterCategory) (*model.CategoryListResp, error)
 	ShopOwners(ctx context.Context, input model.FilterShopOwner) (*model.ShopOwnerListResponse, error)
 	Shops(ctx context.Context, input model.FilterShop) (*model.ShopListResp, error)
 	ShopLocations(ctx context.Context, input model.FilterShopLocation) (*model.ShopLocationListResp, error)
+	Foods(ctx context.Context, input model.FilterFood) (*model.FoodListResponse, error)
 	FileLogo(ctx context.Context, logoFilename string) (string, error)
 }
 
@@ -315,6 +328,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Food.UpdatedAt(childComplexity), true
 
+	case "FoodListResponse.list":
+		if e.complexity.FoodListResponse.List == nil {
+			break
+		}
+
+		return e.complexity.FoodListResponse.List(childComplexity), true
+
+	case "FoodListResponse.total":
+		if e.complexity.FoodListResponse.Total == nil {
+			break
+		}
+
+		return e.complexity.FoodListResponse.Total(childComplexity), true
+
 	case "Mutation.createCategory":
 		if e.complexity.Mutation.CreateCategory == nil {
 			break
@@ -326,6 +353,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateCategory(childComplexity, args["name"].(string)), true
+
+	case "Mutation.createFood":
+		if e.complexity.Mutation.CreateFood == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createFood_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateFood(childComplexity, args["input"].(model.CreateFood)), true
 
 	case "Mutation.createShop":
 		if e.complexity.Mutation.CreateShop == nil {
@@ -375,6 +414,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.DeleteCategories(childComplexity, args["ids"].([]int)), true
 
+	case "Mutation.deleteFoods":
+		if e.complexity.Mutation.DeleteFoods == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteFoods_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteFoods(childComplexity, args["ids"].([]int)), true
+
 	case "Mutation.deleteShopLocations":
 		if e.complexity.Mutation.DeleteShopLocations == nil {
 			break
@@ -422,6 +473,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateCategory(childComplexity, args["input"].(model.UpdateCategory)), true
+
+	case "Mutation.updateFood":
+		if e.complexity.Mutation.UpdateFood == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateFood_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateFood(childComplexity, args["input"].(model.UpdateFood)), true
 
 	case "Mutation.updateShop":
 		if e.complexity.Mutation.UpdateShop == nil {
@@ -482,6 +545,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.FileLogo(childComplexity, args["logo_filename"].(string)), true
+
+	case "Query.foods":
+		if e.complexity.Query.Foods == nil {
+			break
+		}
+
+		args, err := ec.field_Query_foods_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Foods(childComplexity, args["input"].(model.FilterFood)), true
 
 	case "Query.shopLocations":
 		if e.complexity.Query.ShopLocations == nil {
@@ -710,13 +785,16 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{rc, e}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputFilterCategory,
+		ec.unmarshalInputcreateFood,
 		ec.unmarshalInputcreateShop,
 		ec.unmarshalInputcreateShopLocation,
 		ec.unmarshalInputcreateShopOwner,
+		ec.unmarshalInputfilterFood,
 		ec.unmarshalInputfilterShop,
 		ec.unmarshalInputfilterShopLocation,
 		ec.unmarshalInputfilterShopOwner,
 		ec.unmarshalInputupdateCategory,
+		ec.unmarshalInputupdateFood,
 		ec.unmarshalInputupdateShop,
 		ec.unmarshalInputupdateShopLocation,
 		ec.unmarshalInputupdateShopOwner,
@@ -814,6 +892,21 @@ func (ec *executionContext) field_Mutation_createCategory_args(ctx context.Conte
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createFood_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.CreateFood
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNcreateFood2vᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCreateFood(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_createShopLocation_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -860,6 +953,21 @@ func (ec *executionContext) field_Mutation_createShop_args(ctx context.Context, 
 }
 
 func (ec *executionContext) field_Mutation_deleteCategories_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []int
+	if tmp, ok := rawArgs["ids"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ids"))
+		arg0, err = ec.unmarshalNInt2ᚕintᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["ids"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteFoods_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 []int
@@ -926,6 +1034,21 @@ func (ec *executionContext) field_Mutation_updateCategory_args(ctx context.Conte
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNupdateCategory2vᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐUpdateCategory(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateFood_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.UpdateFood
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNupdateFood2vᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐUpdateFood(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1031,6 +1154,21 @@ func (ec *executionContext) field_Query_categories_args(ctx context.Context, raw
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNFilterCategory2vᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐFilterCategory(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_foods_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.FilterFood
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNfilterFood2vᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐFilterFood(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1325,12 +1463,12 @@ func (ec *executionContext) fieldContext_Category_foods(ctx context.Context, fie
 				return ec.fieldContext_Food_name(ctx, field)
 			case "description":
 				return ec.fieldContext_Food_description(ctx, field)
-			case "shop_id":
-				return ec.fieldContext_Food_shop_id(ctx, field)
 			case "created_at":
 				return ec.fieldContext_Food_created_at(ctx, field)
 			case "updated_at":
 				return ec.fieldContext_Food_updated_at(ctx, field)
+			case "shop_id":
+				return ec.fieldContext_Food_shop_id(ctx, field)
 			case "shop":
 				return ec.fieldContext_Food_shop(ctx, field)
 			case "categories":
@@ -1736,14 +1874,11 @@ func (ec *executionContext) _Food_description(ctx context.Context, field graphql
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Food_description(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1754,50 +1889,6 @@ func (ec *executionContext) fieldContext_Food_description(ctx context.Context, f
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Food_shop_id(ctx context.Context, field graphql.CollectedField, obj *model.Food) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Food_shop_id(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ShopID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Food_shop_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Food",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1891,6 +1982,50 @@ func (ec *executionContext) fieldContext_Food_updated_at(ctx context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _Food_shop_id(ctx context.Context, field graphql.CollectedField, obj *model.Food) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Food_shop_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ShopID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Food_shop_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Food",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Food_shop(ctx context.Context, field graphql.CollectedField, obj *model.Food) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Food_shop(ctx, field)
 	if err != nil {
@@ -1970,14 +2105,11 @@ func (ec *executionContext) _Food_categories(ctx context.Context, field graphql.
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.([]*model.Category)
 	fc.Result = res
-	return ec.marshalNCategory2ᚕᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCategoryᚄ(ctx, field.Selections, res)
+	return ec.marshalOCategory2ᚕᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCategory(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Food_categories(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2000,6 +2132,112 @@ func (ec *executionContext) fieldContext_Food_categories(ctx context.Context, fi
 				return ec.fieldContext_Category_foods(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Category", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FoodListResponse_list(ctx context.Context, field graphql.CollectedField, obj *model.FoodListResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FoodListResponse_list(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.List, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Food)
+	fc.Result = res
+	return ec.marshalNFood2ᚕᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐFoodᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FoodListResponse_list(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FoodListResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Food_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Food_name(ctx, field)
+			case "description":
+				return ec.fieldContext_Food_description(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Food_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Food_updated_at(ctx, field)
+			case "shop_id":
+				return ec.fieldContext_Food_shop_id(ctx, field)
+			case "shop":
+				return ec.fieldContext_Food_shop(ctx, field)
+			case "categories":
+				return ec.fieldContext_Food_categories(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Food", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FoodListResponse_total(ctx context.Context, field graphql.CollectedField, obj *model.FoodListResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FoodListResponse_total(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Total, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FoodListResponse_total(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FoodListResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2629,6 +2867,162 @@ func (ec *executionContext) fieldContext_Mutation_deleteShopLocations(ctx contex
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_createFood(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createFood(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateFood(rctx, fc.Args["input"].(model.CreateFood))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOVoid2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createFood(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Void does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createFood_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateFood(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateFood(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateFood(rctx, fc.Args["input"].(model.UpdateFood))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOVoid2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateFood(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Void does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateFood_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteFoods(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteFoods(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteFoods(rctx, fc.Args["ids"].([]int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOVoid2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deleteFoods(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Void does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteFoods_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_categories(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_categories(ctx, field)
 	if err != nil {
@@ -2867,6 +3261,67 @@ func (ec *executionContext) fieldContext_Query_shopLocations(ctx context.Context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_shopLocations_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_foods(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_foods(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Foods(rctx, fc.Args["input"].(model.FilterFood))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.FoodListResponse)
+	fc.Result = res
+	return ec.marshalNFoodListResponse2ᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐFoodListResponse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_foods(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "list":
+				return ec.fieldContext_FoodListResponse_list(ctx, field)
+			case "total":
+				return ec.fieldContext_FoodListResponse_total(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type FoodListResponse", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_foods_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -6148,6 +6603,58 @@ func (ec *executionContext) unmarshalInputFilterCategory(ctx context.Context, ob
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputcreateFood(ctx context.Context, obj interface{}) (model.CreateFood, error) {
+	var it model.CreateFood
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "description", "shop_id", "category_ids"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "shop_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shop_id"))
+			it.ShopID, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "category_ids":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category_ids"))
+			it.CategoryIds, err = ec.unmarshalOInt2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputcreateShop(ctx context.Context, obj interface{}) (model.CreateShop, error) {
 	var it model.CreateShop
 	asMap := map[string]interface{}{}
@@ -6287,6 +6794,98 @@ func (ec *executionContext) unmarshalInputcreateShopOwner(ctx context.Context, o
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
 			it.Password, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputfilterFood(ctx context.Context, obj interface{}) (model.FilterFood, error) {
+	var it model.FilterFood
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "name", "description", "shop_id", "shop_name", "category_id", "category_name", "page", "page_size"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "shop_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shop_id"))
+			it.ShopID, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "shop_name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shop_name"))
+			it.ShopName, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "category_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category_id"))
+			it.CategoryID, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "category_name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category_name"))
+			it.CategoryName, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "page":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+			it.Page, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "page_size":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page_size"))
+			it.PageSize, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6591,6 +7190,66 @@ func (ec *executionContext) unmarshalInputupdateCategory(ctx context.Context, ob
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputupdateFood(ctx context.Context, obj interface{}) (model.UpdateFood, error) {
+	var it model.UpdateFood
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "name", "description", "shop_id", "category_ids"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "shop_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shop_id"))
+			it.ShopID, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "category_ids":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category_ids"))
+			it.CategoryIds, err = ec.unmarshalOInt2ᚕᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6934,16 +7593,6 @@ func (ec *executionContext) _Food(ctx context.Context, sel ast.SelectionSet, obj
 
 			out.Values[i] = ec._Food_description(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "shop_id":
-
-			out.Values[i] = ec._Food_shop_id(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "created_at":
 
 			out.Values[i] = ec._Food_created_at(ctx, field, obj)
@@ -6958,6 +7607,13 @@ func (ec *executionContext) _Food(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "shop_id":
+
+			out.Values[i] = ec._Food_shop_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "shop":
 
 			out.Values[i] = ec._Food_shop(ctx, field, obj)
@@ -6968,6 +7624,38 @@ func (ec *executionContext) _Food(ctx context.Context, sel ast.SelectionSet, obj
 		case "categories":
 
 			out.Values[i] = ec._Food_categories(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var foodListResponseImplementors = []string{"FoodListResponse"}
+
+func (ec *executionContext) _FoodListResponse(ctx context.Context, sel ast.SelectionSet, obj *model.FoodListResponse) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, foodListResponseImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FoodListResponse")
+		case "list":
+
+			out.Values[i] = ec._FoodListResponse_list(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "total":
+
+			out.Values[i] = ec._FoodListResponse_total(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -7072,6 +7760,24 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteShopLocations(ctx, field)
+			})
+
+		case "createFood":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createFood(ctx, field)
+			})
+
+		case "updateFood":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateFood(ctx, field)
+			})
+
+		case "deleteFoods":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteFoods(ctx, field)
 			})
 
 		default:
@@ -7183,6 +7889,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_shopLocations(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "foods":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_foods(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -7971,6 +8700,74 @@ func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.S
 	return graphql.WrapContextMarshaler(ctx, res)
 }
 
+func (ec *executionContext) marshalNFood2ᚕᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐFoodᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Food) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNFood2ᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐFood(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNFood2ᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐFood(ctx context.Context, sel ast.SelectionSet, v *model.Food) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Food(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNFoodListResponse2vᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐFoodListResponse(ctx context.Context, sel ast.SelectionSet, v model.FoodListResponse) graphql.Marshaler {
+	return ec._FoodListResponse(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNFoodListResponse2ᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐFoodListResponse(ctx context.Context, sel ast.SelectionSet, v *model.FoodListResponse) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._FoodListResponse(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -8520,6 +9317,11 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
+func (ec *executionContext) unmarshalNcreateFood2vᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCreateFood(ctx context.Context, v interface{}) (model.CreateFood, error) {
+	res, err := ec.unmarshalInputcreateFood(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNcreateShop2vᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCreateShop(ctx context.Context, v interface{}) (model.CreateShop, error) {
 	res, err := ec.unmarshalInputcreateShop(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -8532,6 +9334,11 @@ func (ec *executionContext) unmarshalNcreateShopLocation2vᚑshiᚋcmdᚋbackᚋ
 
 func (ec *executionContext) unmarshalNcreateShopOwner2vᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCreateShopOwner(ctx context.Context, v interface{}) (model.CreateShopOwner, error) {
 	res, err := ec.unmarshalInputcreateShopOwner(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNfilterFood2vᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐFilterFood(ctx context.Context, v interface{}) (model.FilterFood, error) {
+	res, err := ec.unmarshalInputfilterFood(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -8552,6 +9359,11 @@ func (ec *executionContext) unmarshalNfilterShopOwner2vᚑshiᚋcmdᚋbackᚋgra
 
 func (ec *executionContext) unmarshalNupdateCategory2vᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐUpdateCategory(ctx context.Context, v interface{}) (model.UpdateCategory, error) {
 	res, err := ec.unmarshalInputupdateCategory(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNupdateFood2vᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐUpdateFood(ctx context.Context, v interface{}) (model.UpdateFood, error) {
+	res, err := ec.unmarshalInputupdateFood(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -8594,6 +9406,47 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOCategory2ᚕᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCategory(ctx context.Context, sel ast.SelectionSet, v []*model.Category) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOCategory2ᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCategory(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
 }
 
 func (ec *executionContext) marshalOCategory2ᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐCategory(ctx context.Context, sel ast.SelectionSet, v *model.Category) graphql.Marshaler {
@@ -8665,6 +9518,76 @@ func (ec *executionContext) marshalOFood2ᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodel
 		return graphql.Null
 	}
 	return ec._Food(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOInt2ᚕintᚄ(ctx context.Context, v interface{}) ([]int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]int, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNInt2int(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOInt2ᚕintᚄ(ctx context.Context, sel ast.SelectionSet, v []int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNInt2int(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOInt2ᚕᚖint(ctx context.Context, v interface{}) ([]*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*int, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOInt2ᚖint(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOInt2ᚕᚖint(ctx context.Context, sel ast.SelectionSet, v []*int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalOInt2ᚖint(ctx, sel, v[i])
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {

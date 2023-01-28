@@ -7,6 +7,7 @@ type Repository struct {
 	Category  *categoryRepository
 	Shop      *shopRepository
 	ShopOwner *shopOwnerRepository
+	Food      *foodRepository
 }
 type RepoConfig struct {
 	DS *ds.DataSource
@@ -18,5 +19,6 @@ func NewRepository(rConfig *RepoConfig) *Repository {
 		Category:  newCategoryRepository(rConfig),
 		Shop:      newShopRepository(rConfig),
 		ShopOwner: newShopOwnerRepository(rConfig),
+		Food:      newFoodRepository(rConfig),
 	}
 }

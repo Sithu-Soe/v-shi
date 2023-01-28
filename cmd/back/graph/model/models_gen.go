@@ -42,12 +42,17 @@ type FilterCategory struct {
 type Food struct {
 	ID          int         `json:"id"`
 	Name        string      `json:"name"`
-	Description string      `json:"description"`
-	ShopID      int         `json:"shop_id"`
+	Description *string     `json:"description"`
 	CreatedAt   time.Time   `json:"created_at"`
 	UpdatedAt   time.Time   `json:"updated_at"`
+	ShopID      int         `json:"shop_id"`
 	Shop        *Shop       `json:"shop"`
 	Categories  []*Category `json:"categories"`
+}
+
+type FoodListResponse struct {
+	List  []*Food `json:"list"`
+	Total int     `json:"total"`
 }
 
 type Shop struct {
@@ -94,6 +99,13 @@ type ShopOwnerListResponse struct {
 	Total int          `json:"total"`
 }
 
+type CreateFood struct {
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+	ShopID      int     `json:"shop_id"`
+	CategoryIds []int   `json:"category_ids"`
+}
+
 type CreateShop struct {
 	Name        string         `json:"name"`
 	File        graphql.Upload `json:"file"`
@@ -112,6 +124,18 @@ type CreateShopOwner struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type FilterFood struct {
+	ID           *int    `json:"id"`
+	Name         *string `json:"name"`
+	Description  *string `json:"description"`
+	ShopID       *int    `json:"shop_id"`
+	ShopName     *string `json:"shop_name"`
+	CategoryID   *int    `json:"category_id"`
+	CategoryName *string `json:"category_name"`
+	Page         int     `json:"page"`
+	PageSize     int     `json:"page_size"`
 }
 
 type FilterShop struct {
@@ -152,6 +176,14 @@ type FilterShopOwner struct {
 type UpdateCategory struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
+}
+
+type UpdateFood struct {
+	ID          int     `json:"id"`
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
+	ShopID      *int    `json:"shop_id"`
+	CategoryIds []*int  `json:"category_ids"`
 }
 
 type UpdateShop struct {

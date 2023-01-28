@@ -54,6 +54,11 @@ func (r *categoryRepository) FindAll(ctx context.Context, input *model.FilterCat
 	return categories, total, nil
 }
 
+func (r *categoryRepository) Count(ctx context.Context, ids string) (int64, error) {
+	var total int64
+	return total, r.db.WithContext(ctx).Debug().Model(&models.Category{}).Where(fmt.Sprintf("id IN (%s)", ids)).Count(&total).Error
+}
+
 // utilities start
 func (r *categoryRepository) filterToQuery(input *model.FilterCategory, tb *gorm.DB) {
 	tb.Table("categories as c")
