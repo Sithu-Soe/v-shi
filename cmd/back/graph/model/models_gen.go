@@ -13,24 +13,12 @@ type Category struct {
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	Foods     []*Food   `json:"foods"`
 }
 
 type CategoryListResp struct {
 	List  []*Category `json:"list"`
 	Total int         `json:"total"`
-}
-
-type CategoryWithFoods struct {
-	ID        int       `json:"id"`
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Foods     []*Food   `json:"Foods"`
-}
-
-type CategoryWithFoodsListResp struct {
-	List  []*CategoryWithFoods `json:"list"`
-	Total int                  `json:"total"`
 }
 
 type CreateCategoryResponse struct {
@@ -45,7 +33,10 @@ type FilterCategory struct {
 	Name      *string `json:"name"`
 	StartTime *string `json:"start_time"`
 	EndTime   *string `json:"end_time"`
+	FoodID    *int    `json:"food_id"`
 	FoodName  *string `json:"food_name"`
+	Page      int     `json:"page"`
+	PageSize  int     `json:"page_size"`
 }
 
 type Food struct {
@@ -56,7 +47,7 @@ type Food struct {
 	CreatedAt   time.Time   `json:"created_at"`
 	UpdatedAt   time.Time   `json:"updated_at"`
 	Shop        *Shop       `json:"shop"`
-	Categories  []*Category `json:"Categories"`
+	Categories  []*Category `json:"categories"`
 }
 
 type Shop struct {

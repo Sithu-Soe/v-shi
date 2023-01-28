@@ -13,7 +13,6 @@ import (
 	"image"
 	"image/jpeg"
 	"image/png"
-	"log"
 	"os"
 	"path/filepath"
 	"v-shi/cmd/back/graph/model"
@@ -27,7 +26,7 @@ import (
 )
 
 // CreateCategory is the resolver for the createCategory field.
-func (r *mutationResolver) CreateCategory(ctx context.Context, name string) (*model.Category, error) {
+func (r *mutationResolver) CreateCategory(ctx context.Context, name string) (*string, error) {
 	category := models.Category{
 		Name: name,
 	}
@@ -35,48 +34,54 @@ func (r *mutationResolver) CreateCategory(ctx context.Context, name string) (*mo
 		return nil, err
 	}
 
-	resp := model.Category{}
+	return utils.NewString("success"), nil
 
-	if err := copier.CopyWithOption(&resp, &category, copier.Option{
-		IgnoreEmpty: false,
-		DeepCopy:    true,
-		// Converters: []copier.TypeConverter{
-		// 	{
-		// 		SrcType: time.Time{},
-		// 		DstType: copier.String,
-		// 		Fn: func(src interface{}) (interface{}, error) {
-		// 			s, ok := src.(time.Time)
+	// resp := model.Category{}
 
-		// 			if !ok {
-		// 				return nil, errors.New("src type not matching")
-		// 			}
+	// if err := copier.CopyWithOption(&resp, &category, copier.Option{
+	// 	IgnoreEmpty: false,
+	// 	DeepCopy:    true,
+	// 	// Converters: []copier.TypeConverter{
+	// 	// 	{
+	// 	// 		SrcType: time.Time{},
+	// 	// 		DstType: copier.String,
+	// 	// 		Fn: func(src interface{}) (interface{}, error) {
+	// 	// 			s, ok := src.(time.Time)
 
-		// 			return s.Format(time.RFC3339), nil
-		// 		},
-		// 	},
-		// },
-	}); err != nil {
-		return nil, err
-	}
+	// 	// 			if !ok {
+	// 	// 				return nil, errors.New("src type not matching")
+	// 	// 			}
 
-	return &resp, nil
+	// 	// 			return s.Format(time.RFC3339), nil
+	// 	// 		},
+	// 	// 	},
+	// 	// },
+	// }); err != nil {
+	// 	return nil, err
+	// }
+
+	// return &resp, nil
 }
 
 // UpdateCategory is the resolver for the updateCategory field.
 func (r *mutationResolver) UpdateCategory(ctx context.Context, input model.UpdateCategory) (*string, error) {
-	err := r.Repo.Category.UpdateByFields(ctx, &models.UpdateFields{
+	if err := r.Repo.Category.UpdateByFields(ctx, &models.UpdateFields{
 		Field: "id",
 		Value: input.ID,
 		Data: map[string]any{
 			"name": input.Name,
 		},
-	})
-	return nil, err
+	}); err != nil {
+		return nil, err
+	}
+
+	return utils.NewString("success"), nil
 }
 
-// DeleteCategory is the resolver for the deleteCategory field.
-func (r *mutationResolver) DeleteCategory(ctx context.Context, input int) (*string, error) {
-	panic(fmt.Errorf("not implemented: DeleteCategory - deleteCategory"))
+// DeleteCategories is the resolver for the deleteCategories field.
+func (r *mutationResolver) DeleteCategories(ctx context.Context, ids []int) (*string, error) {
+	idsStr := utils.IdsIntToInCon(ids)
+	return nil, r.Repo.Category.DeleteMany(ctx, idsStr)
 }
 
 // CreateShopOwner is the resolver for the createShopOwner field.
@@ -152,13 +157,11 @@ func (r *mutationResolver) CreateShop(ctx context.Context, input model.CreateSho
 	case "image/jpeg":
 		img, err = jpeg.Decode(input.File.File)
 		if err != nil {
-			log.Println(err)
 			return nil, err
 		}
 	case "image/png":
 		img, err = png.Decode(input.File.File)
 		if err != nil {
-			log.Println(err)
 			return nil, err
 		}
 	default:
@@ -174,7 +177,6 @@ func (r *mutationResolver) CreateShop(ctx context.Context, input model.CreateSho
 
 	_, err = miio.MinioClient.PutObject(ctx, miio.BucketName, fullPath, buf, int64(buf.Len()), minio.PutObjectOptions{})
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 
@@ -288,31 +290,22 @@ func (r *mutationResolver) DeleteShopLocations(ctx context.Context, ids []int) (
 	return nil, r.Repo.Shop.DeleteManyShopLocations(ctx, idsStr)
 }
 
-// Category is the resolver for the category field.
-func (r *queryResolver) Category(ctx context.Context, id int) (*model.Category, error) {
-	return r.Repo.Category.FindByField(ctx, "id", id)
-}
-
 // Categories is the resolver for the categories field.
 func (r *queryResolver) Categories(ctx context.Context, input model.FilterCategory) (*model.CategoryListResp, error) {
-	categories, total, err := r.Repo.Category.All(ctx, &input)
+	categories, total, err := r.Repo.Category.FindAll(ctx, &input)
 	if err != nil {
 		return nil, err
 	}
+
+	list := make([]*model.Category, 0)
+	if err := copier.Copy(&list, &categories); err != nil {
+		return nil, err
+	}
+
 	return &model.CategoryListResp{
-		List:  categories,
+		List:  list,
 		Total: int(total),
 	}, nil
-}
-
-// CategoryWithShop is the resolver for the categoryWithShop field.
-func (r *queryResolver) CategoryWithShop(ctx context.Context, id int) (*model.CategoryWithFoods, error) {
-	panic(fmt.Errorf("not implemented: CategoryWithShop - categoryWithShop"))
-}
-
-// CategoriesWithShops is the resolver for the categoriesWithShops field.
-func (r *queryResolver) CategoriesWithShops(ctx context.Context, input *model.FilterCategory) (*model.CategoryWithFoodsListResp, error) {
-	panic(fmt.Errorf("not implemented: CategoriesWithShops - categoriesWithShops"))
 }
 
 // ShopOwners is the resolver for the ShopOwners field.
@@ -324,7 +317,6 @@ func (r *queryResolver) ShopOwners(ctx context.Context, input model.FilterShopOw
 
 	list := make([]*model.ShopOwner, 0)
 	if err := copier.Copy(&list, &shopOwners); err != nil {
-		log.Println(err, "DD")
 		return nil, err
 	}
 
@@ -411,19 +403,3 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//     it when you're done.
-//   - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *queryResolver) Shop(ctx context.Context, id int) (*model.Shop, error) {
-	panic(fmt.Errorf("not implemented: Shop - shop"))
-}
-func (r *mutationResolver) DeleteShop(ctx context.Context, ids []int) (*string, error) {
-	panic(fmt.Errorf("not implemented: DeleteShop - deleteShop"))
-}
-func (r *mutationResolver) DeleteShopOwner(ctx context.Context, id int) (*string, error) {
-	panic(fmt.Errorf("not implemented: DeleteShopOwner - deleteShopOwner"))
-}

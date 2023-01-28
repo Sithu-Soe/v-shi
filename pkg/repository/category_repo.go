@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"v-shi/cmd/back/graph/model"
 	"v-shi/pkg/models"
+	"v-shi/pkg/utils"
 
 	"gorm.io/gorm"
 )
@@ -31,30 +32,52 @@ func (r *categoryRepository) FindByField(ctx context.Context, field, value any) 
 }
 
 func (r *categoryRepository) UpdateByFields(ctx context.Context, updateFields *models.UpdateFields) error {
-	db := r.db.WithContext(ctx).Debug().Model(&model.Category{})
-	db.Where(updateFields.Field, updateFields.Value)
-	return db.Updates(updateFields.Data).Error
+	return r.db.WithContext(ctx).Debug().Model(&models.Category{}).Where(updateFields.Field, updateFields.Value).Updates(updateFields.Data).Error
 }
 
-func (r *categoryRepository) All(ctx context.Context, input *model.FilterCategory) ([]*model.Category, int64, error) {
-	list := make([]*model.Category, 0)
+func (r *categoryRepository) DeleteMany(ctx context.Context, ids string) error {
+	return r.db.WithContext(ctx).Debug().Delete(&models.Category{}, fmt.Sprintf("id in (%s)", ids)).Error
+}
+
+func (r *categoryRepository) FindAll(ctx context.Context, input *model.FilterCategory) ([]*models.Category, int64, error) {
 	tb := r.db.WithContext(ctx).Debug().Model(&models.Category{})
-	if input.ID != nil {
-		tb.Where("id", input.ID)
-	}
-
-	if input.Name != nil {
-		tb.Where("name LIKE ?", "%"+*input.Name+"%")
-	}
-
-	if input.StartTime != nil && input.EndTime != nil {
-		tb.Where("created_at BETWEEN ? AND ?", input.StartTime, input.EndTime)
+	if input != nil {
+		r.filterToQuery(input, tb)
 	}
 
 	var total int64
-	tb.Count(&total)
-	if err := tb.Find(&list).Error; err != nil {
+	categories := make([]*models.Category, 0)
+	if err := tb.Count(&total).Scopes(utils.Paginate(input.Page, input.PageSize)).Find(&categories).Error; err != nil {
 		return nil, 0, err
 	}
-	return list, total, nil
+
+	return categories, total, nil
 }
+
+// utilities start
+func (r *categoryRepository) filterToQuery(input *model.FilterCategory, tb *gorm.DB) {
+	tb.Table("categories as c")
+	tb.Joins("LEFT JOIN categories_foods cf ON cf.category_id = c.id")
+	tb.Joins("LEFT JOIN foods f ON cf.food_id = f.id")
+	if input.ID != nil {
+		tb.Where("s.id", input.ID)
+	}
+
+	if input.Name != nil {
+		tb.Where("s.name", input.Name)
+	}
+
+	if input.StartTime != nil && input.EndTime != nil {
+		tb.Where("s.created_at BETWEEN ? AND ?", input.StartTime, input.EndTime)
+	}
+
+	if input.FoodID != nil {
+		tb.Where("f.id", input.FoodID)
+	}
+
+	if input.FoodName != nil {
+		tb.Where("f.name", input.FoodName)
+	}
+}
+
+// utilities end

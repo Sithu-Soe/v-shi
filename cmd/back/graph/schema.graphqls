@@ -12,33 +12,7 @@ type Category {
   name: String!
   created_at: Time!
   updated_at: Time!
-}
-
-type CategoryWithFoods {
-  id: Int!
-  name: String!
-  created_at: Time!
-  updated_at: Time!
-  Foods: [Food!]!
-}
-
-
-## response
-### read
-type CategoryListResp {
-  list: [Category!]!
-  total: Int!
-}
-
-type CategoryWithFoodsListResp {
-  list: [CategoryWithFoods!]!
-  total: Int!
-}
-
-### update
-input updateCategory {
-  id: Int!
-  name: String!
+  foods: [Food]
 }
 
 ### create example with custom code
@@ -49,13 +23,29 @@ type CreateCategoryResponse {
   category: Category
 }
 
+## response
+### read
+type CategoryListResp {
+  list: [Category!]!
+  total: Int!
+}
+
+### update
+input updateCategory {
+  id: Int!
+  name: String!
+}
+
 ## input
 input FilterCategory {
   id: Int
   name: String
   start_time: String
   end_time: String
+  food_id: Int
   food_name: String
+  page: Int!
+  page_size: Int!
 }
 
 #### Category END
@@ -70,7 +60,7 @@ type Food {
   created_at: Time!
   updated_at: Time!
   shop: Shop!
-  Categories: [Category!]!
+  categories: [Category!]!
 }
 #### Food End
 
@@ -220,10 +210,7 @@ input updateShopLocation {
 
 type Query {
   # category
-  category(id: Int!): Category!
   categories(input: FilterCategory!): CategoryListResp!
-  categoryWithShop(id: Int!): CategoryWithFoods!
-  categoriesWithShops(input: FilterCategory): CategoryWithFoodsListResp!
   # categories: [Category!]!
 
   # shop owner
@@ -241,9 +228,9 @@ type Query {
 
 type Mutation {
   # category
-  createCategory(name: String!): Category!
+  createCategory(name: String!): Void
   updateCategory(input: updateCategory!): Void
-  deleteCategory(input: Int!): Void
+  deleteCategories(ids: [Int!]!): Void
 
   # shop owner
   createShopOwner(input: createShopOwner!): Void
