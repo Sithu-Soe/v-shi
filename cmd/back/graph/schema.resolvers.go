@@ -80,7 +80,30 @@ func (r *mutationResolver) DeleteCategory(ctx context.Context, input int) (*stri
 
 // CreateShopOwner is the resolver for the createShopOwner field.
 func (r *mutationResolver) CreateShopOwner(ctx context.Context, input model.CreateShopOwner) (*model.ShopOwner, error) {
-	panic(fmt.Errorf("not implemented: CreateShopOwner - createShopOwner"))
+	hashedPassword, err := utils.HashPassword(input.Password)
+	if err != nil {
+		return nil, err
+	}
+	shopOwner := &models.ShopOwner{
+		Name:     input.Name,
+		Email:    input.Email,
+		Password: hashedPassword,
+	}
+
+	if err := r.Repo.ShopOwner.Create(ctx, shopOwner); err != nil {
+		return nil, err
+	}
+
+	log.Println(shopOwner, "GH")
+
+	resp := &model.ShopOwner{}
+
+	if err := copier.Copy(resp, shopOwner); err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+
 }
 
 // CreateShop is the resolver for the createShop field.
