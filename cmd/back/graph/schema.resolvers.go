@@ -7,6 +7,7 @@ package graph
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/base64"
 	"fmt"
 	"image"
@@ -223,6 +224,70 @@ func (r *mutationResolver) DeleteShops(ctx context.Context, ids []int) (*string,
 	return nil, r.Repo.Shop.DeleteMany(ctx, idsStr)
 }
 
+// CreateShopLocation is the resolver for the createShopLocation field.
+func (r *mutationResolver) CreateShopLocation(ctx context.Context, input model.CreateShopLocation) (*string, error) {
+	shopLocation := &models.ShopLocation{
+		Name:   input.Name,
+		Lat:    input.Lat,
+		Lng:    input.Lng,
+		ShopID: uint64(input.ShopID),
+	}
+	if input.Description != nil {
+		shopLocation.Description = sql.NullString{
+			String: *input.Description,
+			Valid:  true,
+		}
+	}
+
+	if err := r.Repo.Shop.CreateShopLocation(ctx, shopLocation); err != nil {
+		return nil, err
+	}
+
+	return utils.NewString("success"), nil
+}
+
+// UpdateShopLocation is the resolver for the updateShopLocation field.
+func (r *mutationResolver) UpdateShopLocation(ctx context.Context, input model.UpdateShopLocation) (*string, error) {
+	updateFields := models.UpdateFields{
+		Field: "id",
+		Value: input.ID,
+		Data:  map[string]any{},
+	}
+
+	if input.Name != nil {
+		updateFields.Data["name"] = input.Name
+	}
+
+	if input.Description != nil {
+		updateFields.Data["description"] = input.Description
+	}
+
+	if input.Lat != nil {
+		updateFields.Data["lat"] = input.Lat
+	}
+
+	if input.Lng != nil {
+		updateFields.Data["lng"] = input.Lng
+	}
+
+	if input.ShopID != nil {
+		updateFields.Data["shop_id"] = input.ShopID
+	}
+
+	if err := r.Repo.Shop.UpdateByFieldsShopLocation(ctx, &updateFields); err != nil {
+		return nil, err
+	}
+
+	return utils.NewString("success"), nil
+}
+
+// DeleteShopLocations is the resolver for the deleteShopLocations field.
+func (r *mutationResolver) DeleteShopLocations(ctx context.Context, ids []int) (*string, error) {
+	idsStr := utils.IdsIntToInCon(ids)
+
+	return nil, r.Repo.Shop.DeleteManyShopLocations(ctx, idsStr)
+}
+
 // Category is the resolver for the category field.
 func (r *queryResolver) Category(ctx context.Context, id int) (*model.Category, error) {
 	return r.Repo.Category.FindByField(ctx, "id", id)
@@ -270,19 +335,36 @@ func (r *queryResolver) ShopOwners(ctx context.Context, input model.FilterShopOw
 }
 
 // Shops is the resolver for the shops field.
-func (r *queryResolver) Shops(ctx context.Context, input *model.FilterShop) (*model.ShopListResp, error) {
-	shops, total, err := r.Repo.Shop.FindAll(ctx, input)
+func (r *queryResolver) Shops(ctx context.Context, input model.FilterShop) (*model.ShopListResp, error) {
+	shops, total, err := r.Repo.Shop.FindAll(ctx, &input)
 	if err != nil {
 		return nil, err
 	}
 
 	list := make([]*model.Shop, 0)
 	if err := copier.Copy(&list, &shops); err != nil {
-		log.Println(err, "DD")
 		return nil, err
 	}
 
 	return &model.ShopListResp{
+		List:  list,
+		Total: int(total),
+	}, nil
+}
+
+// ShopLocations is the resolver for the shopLocations field.
+func (r *queryResolver) ShopLocations(ctx context.Context, input model.FilterShopLocation) (*model.ShopLocationListResp, error) {
+	shopLocations, total, err := r.Repo.Shop.FindAllShopLocations(ctx, &input)
+	if err != nil {
+		return nil, err
+	}
+
+	list := make([]*model.ShopLocation, 0)
+	if err := copier.Copy(&list, &shopLocations); err != nil {
+		return nil, err
+	}
+
+	return &model.ShopLocationListResp{
 		List:  list,
 		Total: int(total),
 	}, nil

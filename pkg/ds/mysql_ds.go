@@ -34,7 +34,7 @@ func LoadDB() *gorm.DB {
 		&models.Category{},
 		&models.ShopOwner{},
 		&models.Shop{},
-		&models.Location{},
+		&models.ShopLocation{},
 		&models.Food{},
 		&models.FoodImage{},
 	)

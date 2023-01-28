@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"fmt"
 	"v-shi/conf"
 
@@ -27,4 +28,16 @@ type ShopOwner struct {
 	Email    string `gorm:"column:email;type:varchar(255);not null;unique" json:"email"`
 	Password string `gorm:"column:password;type:varchar(255)" json:"password"`
 	Shops    []*Shop
+}
+
+type ShopLocation struct {
+	// Lat    float64 `gorm:"type:decimal(10,8)"`
+	// Lng    float64 `gorm:"type:decimal(11,8)"`
+	gorm.Model
+	Name        string         `gorm:"column:name;type:varchar(100);not null" json:"name"`
+	Description sql.NullString `gorm:"column:description" json:"description"`
+	Lat         float64        `gorm:"column:lat;not null"`
+	Lng         float64        `gorm:"column:lng;not null"`
+	ShopID      uint64         `gorm:"column:shop_id;not null" json:"shop_id"`
+	Shop        Shop
 }

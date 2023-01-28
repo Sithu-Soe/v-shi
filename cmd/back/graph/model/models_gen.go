@@ -73,6 +73,21 @@ type ShopListResp struct {
 	Total int     `json:"total"`
 }
 
+type ShopLocation struct {
+	ID        int       `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Lat       float64   `json:"lat"`
+	Lng       float64   `json:"lng"`
+	ShopID    int       `json:"shop_id"`
+	Shop      *Shop     `json:"shop"`
+}
+
+type ShopLocationListResp struct {
+	List  []*ShopLocation `json:"list"`
+	Total int             `json:"total"`
+}
+
 type ShopOwner struct {
 	ID        int       `json:"id"`
 	Name      string    `json:"name"`
@@ -94,6 +109,14 @@ type CreateShop struct {
 	ShopOwnerID int            `json:"shop_owner_id"`
 }
 
+type CreateShopLocation struct {
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+	Lat         float64 `json:"lat"`
+	Lng         float64 `json:"lng"`
+	ShopID      int     `json:"shop_id"`
+}
+
 type CreateShopOwner struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
@@ -109,6 +132,20 @@ type FilterShop struct {
 	ShopOwnerName *string `json:"shop_owner_name"`
 	Page          int     `json:"page"`
 	PageSize      int     `json:"page_size"`
+}
+
+type FilterShopLocation struct {
+	ID          *int     `json:"id"`
+	Name        *string  `json:"name"`
+	Description *string  `json:"description"`
+	StartTime   *string  `json:"start_time"`
+	EndTime     *string  `json:"end_time"`
+	Lat         *float64 `json:"lat"`
+	Lng         *float64 `json:"lng"`
+	ShopID      *int     `json:"shop_id"`
+	ShopName    *string  `json:"shop_name"`
+	Page        int      `json:"page"`
+	PageSize    int      `json:"page_size"`
 }
 
 type FilterShopOwner struct {
@@ -130,6 +167,15 @@ type UpdateShop struct {
 	ID          int     `json:"id"`
 	Name        *string `json:"name"`
 	ShopOwnerID *int    `json:"shop_owner_id"`
+}
+
+type UpdateShopLocation struct {
+	ID          int      `json:"id"`
+	Name        *string  `json:"name"`
+	Description *string  `json:"description"`
+	Lat         *float64 `json:"lat"`
+	Lng         *float64 `json:"lng"`
+	ShopID      *int     `json:"shop_id"`
 }
 
 type UpdateShopOwner struct {
