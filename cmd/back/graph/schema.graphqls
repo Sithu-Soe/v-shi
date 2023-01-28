@@ -36,7 +36,7 @@ type CategoryWithFoodsListResp {
 }
 
 ### update
-input UpdateCategory {
+input updateCategory {
   id: Int!
   name: String!
 }
@@ -94,20 +94,20 @@ type ShopOwnerListResponse {
 }
 
 ## inputs
-input CreateShopOwner {
+input createShopOwner {
   name: String!
   email: String!
   password: String!
 }
 
-input UpdateShopOwner {
+input updateShopOwner {
   id: Int!
   name: String
   email: String
   password: String
 }
 
-input FilterShopOwner {
+input filterShopOwner {
   id: Int
   name: String
   email: String
@@ -128,24 +128,39 @@ type Shop {
   logo_filename: String!
   created_at: Time!
   updated_at: Time!
+  shop_owner: ShopOwner!
 }
 
-input FilterShop {
-  id: Int
-  name: String
-  start_time: String
-  end_time: String
-}
-
-type ShopsResp {
+type ShopListResp {
   list: [Shop!]!
   total: Int!
 }
 
+input filterShop {
+  id: Int
+  name: String
+  start_time: String
+  end_time: String
+  shop_owner_id: Int
+  shop_owner_name: String
+  page: Int!
+  page_size: Int!
+}
+
+## inputs
 input createShop {
   name: String!
   file: Upload!
+  shop_owner_id: Int!
 }
+
+input updateShop {
+  id: Int!
+  name: String
+  shop_owner_id: Int
+}
+
+# input updat
 
 #### SHOP END
 
@@ -159,26 +174,30 @@ type Query {
   # categories: [Category!]!
 
   # shop owner
-  ShopOwners(input: FilterShopOwner!): ShopOwnerListResponse!
+  ShopOwners(input: filterShopOwner!): ShopOwnerListResponse!
 
-  shop(id: Int!): Shop!
-  shops(input: FilterShop): ShopsResp!
+  # shop
+  shops(input: filterShop): ShopListResp!
+
+
   FileLogo(logo_filename: String!): String!
 }
 
 type Mutation {
   # category
   createCategory(name: String!): Category!
-  updateCategory(input: UpdateCategory!): Void
+  updateCategory(input: updateCategory!): Void
   deleteCategory(input: Int!): Void
 
   # shop owner
-  createShopOwner(input: CreateShopOwner!): ShopOwner!
-  updateShopOwner(input: UpdateShopOwner!): Void
-  deleteShopOwners(id: [Int!]!): Void
+  createShopOwner(input: createShopOwner!): Void
+  updateShopOwner(input: updateShopOwner!): Void
+  deleteShopOwners(ids: [Int!]!): Void
 
   # shop
-  createShop(input: createShop!): Shop!
+  createShop(input: createShop!): Void
+  updateShop(input: updateShop!): Void
+  deleteShops(ids: [Int!]!): Void
 }
 
 # type Todo {

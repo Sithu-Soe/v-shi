@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"fmt"
-	"log"
 	"v-shi/cmd/back/graph/model"
 	"v-shi/pkg/models"
 	"v-shi/pkg/utils"
@@ -51,7 +50,6 @@ func (r *shopOwnerRepository) DeleteMany(ctx context.Context, ids string) error 
 func (r *shopOwnerRepository) filterToQuery(input *model.FilterShopOwner, tb *gorm.DB) {
 	tb.Table("shop_owners as so")
 	tb.Joins("LEFT JOIN shops s ON so.id = s.shop_owner_id ")
-	log.Println(input, "HHE")
 	if input.ID != nil {
 		tb.Where("so.id", input.ID)
 	}

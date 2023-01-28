@@ -79,7 +79,7 @@ func (r *mutationResolver) DeleteCategory(ctx context.Context, input int) (*stri
 }
 
 // CreateShopOwner is the resolver for the createShopOwner field.
-func (r *mutationResolver) CreateShopOwner(ctx context.Context, input model.CreateShopOwner) (*model.ShopOwner, error) {
+func (r *mutationResolver) CreateShopOwner(ctx context.Context, input model.CreateShopOwner) (*string, error) {
 	hashedPassword, err := utils.HashPassword(input.Password)
 	if err != nil {
 		return nil, err
@@ -94,15 +94,7 @@ func (r *mutationResolver) CreateShopOwner(ctx context.Context, input model.Crea
 		return nil, err
 	}
 
-	log.Println(shopOwner, "GH")
-
-	resp := &model.ShopOwner{}
-
-	if err := copier.Copy(resp, shopOwner); err != nil {
-		return nil, err
-	}
-
-	return resp, nil
+	return utils.NewString("success"), nil
 }
 
 // UpdateShopOwner is the resolver for the updateShopOwner field.
@@ -133,17 +125,17 @@ func (r *mutationResolver) UpdateShopOwner(ctx context.Context, input model.Upda
 		return nil, err
 	}
 
-	return nil, nil
+	return utils.NewString("success"), nil
 }
 
 // DeleteShopOwners is the resolver for the deleteShopOwners field.
-func (r *mutationResolver) DeleteShopOwners(ctx context.Context, id []int) (*string, error) {
-	ids := utils.IdsIntToInCon(id)
-	return nil, r.Repo.ShopOwner.DeleteMany(ctx, ids)
+func (r *mutationResolver) DeleteShopOwners(ctx context.Context, ids []int) (*string, error) {
+	idsStr := utils.IdsIntToInCon(ids)
+	return nil, r.Repo.ShopOwner.DeleteMany(ctx, idsStr)
 }
 
 // CreateShop is the resolver for the createShop field.
-func (r *mutationResolver) CreateShop(ctx context.Context, input model.CreateShop) (*model.Shop, error) {
+func (r *mutationResolver) CreateShop(ctx context.Context, input model.CreateShop) (*string, error) {
 	ext := filepath.Ext(input.File.Filename)
 	filename := utils.GenerateUniqueCode("S") + ext
 	fullPath := "shop/images/" + filename
@@ -188,16 +180,47 @@ func (r *mutationResolver) CreateShop(ctx context.Context, input model.CreateSho
 	shop := &models.Shop{
 		Name:         input.Name,
 		LogoFilename: filename,
+		ShopOwnerID:  uint64(input.ShopOwnerID),
 	}
+
 	if err := r.Repo.Shop.Create(ctx, shop); err != nil {
-		return nil, err
-	}
-	resp := model.Shop{}
-	if err := copier.Copy(&resp, shop); err != nil {
+		if err := miio.MinioClient.RemoveObject(ctx, miio.BucketName, fullPath, minio.RemoveObjectOptions{}); err != nil {
+			return nil, err
+		}
 		return nil, err
 	}
 
-	return &resp, nil
+	return utils.NewString("success"), nil
+}
+
+// UpdateShop is the resolver for the updateShop field.
+func (r *mutationResolver) UpdateShop(ctx context.Context, input model.UpdateShop) (*string, error) {
+	updateFields := models.UpdateFields{
+		Field: "id",
+		Value: input.ID,
+		Data:  map[string]any{},
+	}
+
+	if input.Name != nil {
+		updateFields.Data["name"] = input.Name
+	}
+
+	if input.ShopOwnerID != nil {
+		updateFields.Data["shop_owner_id"] = input.ShopOwnerID
+	}
+
+	if err := r.Repo.Shop.UpdateByFields(ctx, &updateFields); err != nil {
+		return nil, err
+	}
+
+	return utils.NewString("success"), nil
+}
+
+// DeleteShops is the resolver for the deleteShops field.
+func (r *mutationResolver) DeleteShops(ctx context.Context, ids []int) (*string, error) {
+	idsStr := utils.IdsIntToInCon(ids)
+
+	return nil, r.Repo.Shop.DeleteMany(ctx, idsStr)
 }
 
 // Category is the resolver for the category field.
@@ -246,14 +269,23 @@ func (r *queryResolver) ShopOwners(ctx context.Context, input model.FilterShopOw
 	}, nil
 }
 
-// Shop is the resolver for the shop field.
-func (r *queryResolver) Shop(ctx context.Context, id int) (*model.Shop, error) {
-	panic(fmt.Errorf("not implemented: Shop - shop"))
-}
-
 // Shops is the resolver for the shops field.
-func (r *queryResolver) Shops(ctx context.Context, input *model.FilterShop) (*model.ShopsResp, error) {
-	panic(fmt.Errorf("not implemented: Shops - shops"))
+func (r *queryResolver) Shops(ctx context.Context, input *model.FilterShop) (*model.ShopListResp, error) {
+	shops, total, err := r.Repo.Shop.FindAll(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	list := make([]*model.Shop, 0)
+	if err := copier.Copy(&list, &shops); err != nil {
+		log.Println(err, "DD")
+		return nil, err
+	}
+
+	return &model.ShopListResp{
+		List:  list,
+		Total: int(total),
+	}, nil
 }
 
 // FileLogo is the resolver for the FileLogo field.
@@ -304,6 +336,12 @@ type queryResolver struct{ *Resolver }
 //   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
 //     it when you're done.
 //   - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *queryResolver) Shop(ctx context.Context, id int) (*model.Shop, error) {
+	panic(fmt.Errorf("not implemented: Shop - shop"))
+}
+func (r *mutationResolver) DeleteShop(ctx context.Context, ids []int) (*string, error) {
+	panic(fmt.Errorf("not implemented: DeleteShop - deleteShop"))
+}
 func (r *mutationResolver) DeleteShopOwner(ctx context.Context, id int) (*string, error) {
 	panic(fmt.Errorf("not implemented: DeleteShopOwner - deleteShopOwner"))
 }
