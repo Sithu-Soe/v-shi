@@ -32,6 +32,7 @@ func LoadDB() *gorm.DB {
 
 	err = db.AutoMigrate(
 		&models.Category{},
+		&models.ShopOwner{},
 		&models.Shop{},
 		&models.Location{},
 		&models.Food{},

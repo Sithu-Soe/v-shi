@@ -36,7 +36,7 @@ func (r *categoryRepository) UpdateByFields(ctx context.Context, updateFields *m
 	return db.Updates(updateFields.Data).Error
 }
 
-func (r *categoryRepository) All(ctx context.Context, input *model.FilterCatrgory) ([]*model.Category, int64, error) {
+func (r *categoryRepository) All(ctx context.Context, input *model.FilterCategory) ([]*model.Category, int64, error) {
 	list := make([]*model.Category, 0)
 	tb := r.db.WithContext(ctx).Debug().Model(&models.Category{})
 	if input.ID != nil {

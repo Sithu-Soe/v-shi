@@ -6,7 +6,7 @@ type Food struct {
 	gorm.Model
 	Name        string      `gorm:"column:name;type:varchar(150);not null" json:"name"`
 	Description string      `gorm:"column:description" json:"description"`
-	Categorys   []*Category `gorm:"many2many:category_foods"`
+	Categories  []*Category `gorm:"many2many:categories_foods"`
 	ShopID      uint64      `gorm:"column:shop_id;not null" json:"shop_id"`
 	Shop        Shop
 }

@@ -6,6 +6,7 @@ scalar Time
 scalar Void
 scalar Upload
 
+#### Category Start
 type Category {
   id: Int!
   name: String!
@@ -13,25 +14,91 @@ type Category {
   updated_at: Time!
 }
 
-type CategoriesResp {
+type CategoryWithFoods {
+  id: Int!
+  name: String!
+  created_at: Time!
+  updated_at: Time!
+  Foods: [Food!]!
+}
+
+
+## response
+### read
+type CategoryListResp {
   list: [Category!]!
   total: Int!
 }
 
-input FilterCatrgory {
-  id: Int
-  name: String
-  start_time: String
-  end_time: String
+type CategoryWithFoodsListResp {
+  list: [CategoryWithFoods!]!
+  total: Int!
 }
 
+### update
 input UpdateCategory {
   id: Int!
   name: String!
 }
 
+### create example with custom code
+type CreateCategoryResponse {
+  code: Int!
+  success: Boolean!
+  message: String!
+  category: Category
+}
 
-# SHOP
+## input
+input FilterCategory {
+  id: Int
+  name: String
+  start_time: String
+  end_time: String
+  food_name: String
+}
+
+#### Category END
+
+
+#### Food Start
+type Food {
+  id: Int!
+  name: String!
+  description: String!
+  shop_id: Int!
+  created_at: Time!
+  updated_at: Time!
+  shop: Shop!
+  Categories: [Category!]!
+}
+#### Food End
+
+
+
+#### SHOP OWNER START
+type ShopOwner {
+  id: Int!
+  name: String!
+  email: String!
+  password: String!
+  created_at: Time!
+  updated_at: Time!
+  shops: [Shop!]!
+}
+
+## inputs
+input CreateShopOwner {
+  name: String!
+  email: String!
+  password: String!
+}
+
+#### SHOP OWNER END
+
+
+
+#### SHOP Start
 type Shop {
   id: Int!
   name: String!
@@ -57,10 +124,18 @@ input createShop {
   file: Upload!
 }
 
+#### SHOP END
+
+
 type Query {
+  # category
   category(id: Int!): Category!
-  categories(input: FilterCatrgory!): CategoriesResp!
+  categories(input: FilterCategory!): CategoryListResp!
+  categoryWithShop(id: Int!): CategoryWithFoods!
+  categoriesWithShops(input: FilterCategory): CategoryWithFoodsListResp!
   # categories: [Category!]!
+
+  # shop owner
 
   shop(id: Int!): Shop!
   shops(input: FilterShop): ShopsResp!
@@ -71,6 +146,10 @@ type Mutation {
   # category
   createCategory(name: String!): Category!
   updateCategory(input: UpdateCategory!): Void
+  deleteCategory(input: Int!): Void
+
+  # shop owner
+  createShopOwner(input: CreateShopOwner!): ShopOwner!
 
   # shop
   createShop(input: createShop!): Shop!

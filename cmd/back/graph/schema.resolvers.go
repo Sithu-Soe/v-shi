@@ -21,7 +21,6 @@ import (
 	"v-shi/pkg/utils"
 
 	"github.com/anthonynsimon/bild/transform"
-
 	"github.com/jinzhu/copier"
 	minio "github.com/minio/minio-go/v7"
 )
@@ -72,6 +71,16 @@ func (r *mutationResolver) UpdateCategory(ctx context.Context, input model.Updat
 		},
 	})
 	return nil, err
+}
+
+// DeleteCategory is the resolver for the deleteCategory field.
+func (r *mutationResolver) DeleteCategory(ctx context.Context, input int) (*string, error) {
+	panic(fmt.Errorf("not implemented: DeleteCategory - deleteCategory"))
+}
+
+// CreateShopOwner is the resolver for the createShopOwner field.
+func (r *mutationResolver) CreateShopOwner(ctx context.Context, input model.CreateShopOwner) (*model.ShopOwner, error) {
+	panic(fmt.Errorf("not implemented: CreateShopOwner - createShopOwner"))
 }
 
 // CreateShop is the resolver for the createShop field.
@@ -138,15 +147,25 @@ func (r *queryResolver) Category(ctx context.Context, id int) (*model.Category, 
 }
 
 // Categories is the resolver for the categories field.
-func (r *queryResolver) Categories(ctx context.Context, input model.FilterCatrgory) (*model.CategoriesResp, error) {
+func (r *queryResolver) Categories(ctx context.Context, input model.FilterCategory) (*model.CategoryListResp, error) {
 	categories, total, err := r.Repo.Category.All(ctx, &input)
 	if err != nil {
 		return nil, err
 	}
-	return &model.CategoriesResp{
+	return &model.CategoryListResp{
 		List:  categories,
 		Total: int(total),
 	}, nil
+}
+
+// CategoryWithShop is the resolver for the categoryWithShop field.
+func (r *queryResolver) CategoryWithShop(ctx context.Context, id int) (*model.CategoryWithFoods, error) {
+	panic(fmt.Errorf("not implemented: CategoryWithShop - categoryWithShop"))
+}
+
+// CategoriesWithShops is the resolver for the categoriesWithShops field.
+func (r *queryResolver) CategoriesWithShops(ctx context.Context, input *model.FilterCategory) (*model.CategoryWithFoodsListResp, error) {
+	panic(fmt.Errorf("not implemented: CategoriesWithShops - categoriesWithShops"))
 }
 
 // Shop is the resolver for the shop field.

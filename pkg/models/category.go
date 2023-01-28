@@ -6,6 +6,6 @@ import (
 
 type Category struct {
 	gorm.Model
-	Name  string  `bson:"name" json:"name"`
-	Foods []*Food `gorm:"many2many:category_foods"`
+	Name  string  `gorm:"column:name;type:varchar(150);unique" json:"name"`
+	Foods []*Food `gorm:"many2many:categories_foods"`
 }
