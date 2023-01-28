@@ -103,7 +103,43 @@ func (r *mutationResolver) CreateShopOwner(ctx context.Context, input model.Crea
 	}
 
 	return resp, nil
+}
 
+// UpdateShopOwner is the resolver for the updateShopOwner field.
+func (r *mutationResolver) UpdateShopOwner(ctx context.Context, input model.UpdateShopOwner) (*string, error) {
+	updateFields := models.UpdateFields{
+		Field: "id",
+		Value: input.ID,
+		Data:  map[string]any{},
+	}
+
+	if input.Email != nil {
+		updateFields.Data["email"] = input.Email
+	}
+
+	if input.Name != nil {
+		updateFields.Data["name"] = input.Name
+	}
+
+	if input.Password != nil {
+		hashedPassword, err := utils.HashPassword(*input.Password)
+		if err != nil {
+			return nil, err
+		}
+		updateFields.Data["password"] = hashedPassword
+	}
+
+	if err := r.Repo.ShopOwner.UpdateByFields(ctx, &updateFields); err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// DeleteShopOwners is the resolver for the deleteShopOwners field.
+func (r *mutationResolver) DeleteShopOwners(ctx context.Context, id []int) (*string, error) {
+	ids := utils.IdsIntToInCon(id)
+	return nil, r.Repo.ShopOwner.DeleteMany(ctx, ids)
 }
 
 // CreateShop is the resolver for the createShop field.
@@ -191,6 +227,25 @@ func (r *queryResolver) CategoriesWithShops(ctx context.Context, input *model.Fi
 	panic(fmt.Errorf("not implemented: CategoriesWithShops - categoriesWithShops"))
 }
 
+// ShopOwners is the resolver for the ShopOwners field.
+func (r *queryResolver) ShopOwners(ctx context.Context, input model.FilterShopOwner) (*model.ShopOwnerListResponse, error) {
+	shopOwners, total, err := r.Repo.ShopOwner.FindAll(ctx, &input)
+	if err != nil {
+		return nil, err
+	}
+
+	list := make([]*model.ShopOwner, 0)
+	if err := copier.Copy(&list, &shopOwners); err != nil {
+		log.Println(err, "DD")
+		return nil, err
+	}
+
+	return &model.ShopOwnerListResponse{
+		List:  list,
+		Total: int(total),
+	}, nil
+}
+
 // Shop is the resolver for the shop field.
 func (r *queryResolver) Shop(ctx context.Context, id int) (*model.Shop, error) {
 	panic(fmt.Errorf("not implemented: Shop - shop"))
@@ -242,3 +297,13 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//     it when you're done.
+//   - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *mutationResolver) DeleteShopOwner(ctx context.Context, id int) (*string, error) {
+	panic(fmt.Errorf("not implemented: DeleteShopOwner - deleteShopOwner"))
+}

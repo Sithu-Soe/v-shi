@@ -87,11 +87,34 @@ type ShopOwner {
   shops: [Shop!]!
 }
 
+## response
+type ShopOwnerListResponse {
+  list: [ShopOwner!]!
+  total: Int!
+}
+
 ## inputs
 input CreateShopOwner {
   name: String!
   email: String!
   password: String!
+}
+
+input UpdateShopOwner {
+  id: Int!
+  name: String
+  email: String
+  password: String
+}
+
+input FilterShopOwner {
+  id: Int
+  name: String
+  email: String
+  shop_id: Int
+  shop_name: String
+  page: Int!
+  page_size: Int!
 }
 
 #### SHOP OWNER END
@@ -136,6 +159,7 @@ type Query {
   # categories: [Category!]!
 
   # shop owner
+  ShopOwners(input: FilterShopOwner!): ShopOwnerListResponse!
 
   shop(id: Int!): Shop!
   shops(input: FilterShop): ShopsResp!
@@ -150,6 +174,8 @@ type Mutation {
 
   # shop owner
   createShopOwner(input: CreateShopOwner!): ShopOwner!
+  updateShopOwner(input: UpdateShopOwner!): Void
+  deleteShopOwners(id: [Int!]!): Void
 
   # shop
   createShop(input: createShop!): Shop!

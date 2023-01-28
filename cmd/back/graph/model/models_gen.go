@@ -61,6 +61,16 @@ type FilterShop struct {
 	EndTime   *string `json:"end_time"`
 }
 
+type FilterShopOwner struct {
+	ID       *int    `json:"id"`
+	Name     *string `json:"name"`
+	Email    *string `json:"email"`
+	ShopID   *int    `json:"shop_id"`
+	ShopName *string `json:"shop_name"`
+	Page     int     `json:"page"`
+	PageSize int     `json:"page_size"`
+}
+
 type Food struct {
 	ID          int         `json:"id"`
 	Name        string      `json:"name"`
@@ -90,6 +100,11 @@ type ShopOwner struct {
 	Shops     []*Shop   `json:"shops"`
 }
 
+type ShopOwnerListResponse struct {
+	List  []*ShopOwner `json:"list"`
+	Total int          `json:"total"`
+}
+
 type ShopsResp struct {
 	List  []*Shop `json:"list"`
 	Total int     `json:"total"`
@@ -98,6 +113,13 @@ type ShopsResp struct {
 type UpdateCategory struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
+}
+
+type UpdateShopOwner struct {
+	ID       int     `json:"id"`
+	Name     *string `json:"name"`
+	Email    *string `json:"email"`
+	Password *string `json:"password"`
 }
 
 type CreateShop struct {
