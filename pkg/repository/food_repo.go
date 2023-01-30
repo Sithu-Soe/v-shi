@@ -9,6 +9,7 @@ import (
 	"v-shi/pkg/utils"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type foodRepository struct {
@@ -56,7 +57,8 @@ func (r *foodRepository) FindAll(ctx context.Context, input *model.FilterFood) (
 
 	var total int64
 	foods := make([]*models.Food, 0)
-	if err := tb.Count(&total).Scopes(utils.Paginate(input.Page, input.PageSize)).Preload("Shop").Preload("Categories").Find(&foods).Error; err != nil {
+	// if err := tb.Count(&total).Scopes(utils.Paginate(input.Page, input.PageSize)).Preload("Shop").Preload("Categories").Preload("FoodImages").Find(&foods).Error; err != nil {
+	if err := tb.Count(&total).Scopes(utils.Paginate(input.Page, input.PageSize)).Preload(clause.Associations).Find(&foods).Error; err != nil {
 		return nil, 0, err
 	}
 

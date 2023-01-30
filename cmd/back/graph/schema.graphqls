@@ -193,6 +193,14 @@ input updateShopLocation {
 
 
 #### Food START
+type FoodImage {
+  id: Int!
+  filename: String!
+  url: String!
+  created_at: Time!
+  updated_at: Time!
+}
+
 type Food {
   id: Int!
   name: String!
@@ -202,6 +210,7 @@ type Food {
   shop_id: Int!
   shop: Shop!
   categories: [Category]
+  food_images: [FoodImage!]
 }
 
 type FoodListResponse {

@@ -14,6 +14,7 @@ type Food struct {
 	Categories  []*Category `gorm:"many2many:categories_foods"`
 	ShopID      uint64      `gorm:"column:shop_id;not null" json:"shop_id"`
 	Shop        Shop
+	FoodImages  []*FoodImage
 }
 
 func (m *Food) TableName() string {

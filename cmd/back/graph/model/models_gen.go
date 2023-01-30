@@ -40,14 +40,23 @@ type FilterCategory struct {
 }
 
 type Food struct {
-	ID          int         `json:"id"`
-	Name        string      `json:"name"`
-	Description *string     `json:"description"`
-	CreatedAt   time.Time   `json:"created_at"`
-	UpdatedAt   time.Time   `json:"updated_at"`
-	ShopID      int         `json:"shop_id"`
-	Shop        *Shop       `json:"shop"`
-	Categories  []*Category `json:"categories"`
+	ID          int          `json:"id"`
+	Name        string       `json:"name"`
+	Description *string      `json:"description"`
+	CreatedAt   time.Time    `json:"created_at"`
+	UpdatedAt   time.Time    `json:"updated_at"`
+	ShopID      int          `json:"shop_id"`
+	Shop        *Shop        `json:"shop"`
+	Categories  []*Category  `json:"categories"`
+	FoodImages  []*FoodImage `json:"food_images"`
+}
+
+type FoodImage struct {
+	ID        int       `json:"id"`
+	Filename  string    `json:"filename"`
+	URL       string    `json:"url"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type FoodListResponse struct {
