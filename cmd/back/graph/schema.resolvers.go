@@ -335,12 +335,46 @@ func (r *mutationResolver) CreateFood(ctx context.Context, input model.CreateFoo
 
 // UpdateFood is the resolver for the updateFood field.
 func (r *mutationResolver) UpdateFood(ctx context.Context, input model.UpdateFood) (*string, error) {
-	panic(fmt.Errorf("not implemented: UpdateFood - updateFood"))
+	categories := make([]*models.Category, 0)
+	if len(input.CategoryIds) > 0 {
+		for _, id := range input.CategoryIds {
+			categories = append(categories, &models.Category{
+				Model: gorm.Model{
+					ID: uint(*id),
+				},
+			})
+		}
+	}
+
+	updateFields := models.UpdateFields{
+		Field: "id",
+		Value: input.ID,
+		Data:  map[string]any{},
+	}
+	if input.Name != nil {
+		updateFields.Data["name"] = input.Name
+	}
+
+	if input.Description != nil {
+		updateFields.Data["description"] = input.Description
+	}
+
+	if input.ShopID != nil {
+		updateFields.Data["shop_id"] = input.ShopID
+	}
+
+	if err := r.Repo.Food.Update(ctx, &updateFields, categories); err != nil {
+		return nil, err
+	}
+
+	return utils.NewString("success"), nil
 }
 
 // DeleteFoods is the resolver for the deleteFoods field.
 func (r *mutationResolver) DeleteFoods(ctx context.Context, ids []int) (*string, error) {
-	panic(fmt.Errorf("not implemented: DeleteFoods - deleteFoods"))
+	idsStr := utils.IdsIntToInCon(ids)
+	// return nil, r.Repo.Food.DeleteMany(ctx, idsStr)
+	return nil, r.Repo.Food.DeleteFoodWithCategories(ctx, idsStr)
 }
 
 // Categories is the resolver for the categories field.
