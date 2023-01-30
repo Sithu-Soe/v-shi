@@ -17,6 +17,7 @@ import (
 	"os"
 	"path/filepath"
 	"v-shi/cmd/back/graph/model"
+	"v-shi/pkg/dto"
 	"v-shi/pkg/miio"
 	"v-shi/pkg/models"
 	"v-shi/pkg/utils"
@@ -146,7 +147,7 @@ func (r *mutationResolver) DeleteShopOwners(ctx context.Context, ids []int) (*st
 func (r *mutationResolver) CreateShop(ctx context.Context, input model.CreateShop) (*string, error) {
 	ext := filepath.Ext(input.File.Filename)
 	filename := utils.GenerateUniqueCode("S") + ext
-	fullPath := "shop/images/" + filename
+	fullPath := miio.ShopImagePath + filename
 
 	fileSize := input.File.Size
 	if fileSize > miio.MaxImgSize {
@@ -374,6 +375,45 @@ func (r *mutationResolver) DeleteFoods(ctx context.Context, ids []int) (*string,
 	idsStr := utils.IdsIntToInCon(ids)
 	// return nil, r.Repo.Food.DeleteMany(ctx, idsStr)
 	return nil, r.Repo.Food.DeleteFoodWithCategories(ctx, idsStr)
+}
+
+// UploadFoodImages is the resolver for the uploadFoodImages field.
+func (r *mutationResolver) UploadFoodImages(ctx context.Context, input []*model.UploadImage) (*string, error) {
+	filesInfo := make([]*dto.FileUploadInfo, 0)
+
+	for _, food := range input {
+		ext := filepath.Ext(food.File.Filename)
+		filename := utils.GenerateUniqueCode("F") + ext
+		fullPath := miio.FoodImagePath + filename
+
+		filesInfo = append(filesInfo, &dto.FileUploadInfo{
+			ID:       uint64(food.ID),
+			FullPath: fullPath,
+			Filename: filename,
+		})
+		if err := utils.UploadImageWithGQL(ctx, fullPath, &food.File); err != nil {
+			return nil, err
+		}
+	}
+
+	foodImages := make([]*models.FoodImage, 0)
+	for _, info := range filesInfo {
+		foodImages = append(foodImages, &models.FoodImage{
+			Filename: info.Filename,
+			FoodID:   info.ID,
+		})
+	}
+
+	if err := r.Repo.Food.CreateFoodImages(ctx, foodImages); err != nil {
+		for _, info := range filesInfo {
+			if err := miio.MinioClient.RemoveObject(ctx, miio.BucketName, info.FullPath, minio.RemoveObjectOptions{}); err != nil {
+				return nil, err
+			}
+		}
+		return nil, err
+	}
+
+	return utils.NewString("success"), nil
 }
 
 // Categories is the resolver for the categories field.

@@ -241,6 +241,15 @@ input updateFood {
 
 
 
+#### General inputs
+input uploadImage {
+  file: Upload!
+  id: Int!
+}
+####
+
+
+
 
 type Query {
   # category
@@ -288,6 +297,10 @@ type Mutation {
   createFood(input: createFood!): Void
   updateFood(input: updateFood!): Void
   deleteFoods(ids: [Int!]!): Void
+
+  # food images
+  uploadFoodImages(input: [uploadImage!]!): Void
+  # updateFoodImage(input: updateFoodImage): Void
 }
 
 # type Todo {

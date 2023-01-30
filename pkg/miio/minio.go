@@ -9,6 +9,11 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
+const (
+	ShopImagePath = "shop/images/"
+	FoodImagePath = "food/images/"
+)
+
 var (
 	MinioClient *minio.Client
 	BucketName  string

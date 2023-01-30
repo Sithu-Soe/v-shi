@@ -209,3 +209,8 @@ type UpdateShopOwner struct {
 	Email    *string `json:"email"`
 	Password *string `json:"password"`
 }
+
+type UploadImage struct {
+	File graphql.Upload `json:"file"`
+	ID   int            `json:"id"`
+}

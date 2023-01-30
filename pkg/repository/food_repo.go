@@ -121,6 +121,10 @@ func (r *foodRepository) DeleteFoodWithCategories(ctx context.Context, ids strin
 	return nil
 }
 
+func (r *foodRepository) CreateFoodImages(ctx context.Context, foodImages []*models.FoodImage) error {
+	return r.db.WithContext(ctx).Debug().Create(foodImages).Error
+}
+
 // utilities start here
 func (r *foodRepository) filterToQuery(input *model.FilterFood, tb *gorm.DB) {
 	tb.Table("foods as f")

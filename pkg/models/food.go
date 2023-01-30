@@ -1,6 +1,11 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"fmt"
+	"v-shi/conf"
+
+	"gorm.io/gorm"
+)
 
 type Food struct {
 	gorm.Model
@@ -17,12 +22,17 @@ func (m *Food) TableName() string {
 
 type FoodImage struct {
 	gorm.Model
-	Path   string `gorm:"column:path;type:varchar(150);not null" json:"path"`
-	URL    string `gorm:"column:url;type:varchar(255);not null" json:"url"`
-	FoodID uint64
-	Food   Food
+	Filename string `gorm:"column:filename;type:varchar(150);not null" json:"filename"`
+	FoodID   uint64
+	Food     Food
+	URL      string `gorm:"-" json:"url"`
 }
 
 func (m *FoodImage) TableName() string {
 	return "food_images"
+}
+
+func (s *FoodImage) AfterFind(tx *gorm.DB) (err error) {
+	s.URL = fmt.Sprintf("http://%v/food/images/%v", conf.FHostName, s.Filename)
+	return
 }

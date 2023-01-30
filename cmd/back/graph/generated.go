@@ -98,6 +98,7 @@ type ComplexityRoot struct {
 		UpdateShop          func(childComplexity int, input model.UpdateShop) int
 		UpdateShopLocation  func(childComplexity int, input model.UpdateShopLocation) int
 		UpdateShopOwner     func(childComplexity int, input model.UpdateShopOwner) int
+		UploadFoodImages    func(childComplexity int, input []*model.UploadImage) int
 	}
 
 	Query struct {
@@ -170,6 +171,7 @@ type MutationResolver interface {
 	CreateFood(ctx context.Context, input model.CreateFood) (*string, error)
 	UpdateFood(ctx context.Context, input model.UpdateFood) (*string, error)
 	DeleteFoods(ctx context.Context, ids []int) (*string, error)
+	UploadFoodImages(ctx context.Context, input []*model.UploadImage) (*string, error)
 }
 type QueryResolver interface {
 	Categories(ctx context.Context, input model.FilterCategory) (*model.CategoryListResp, error)
@@ -522,6 +524,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateShopOwner(childComplexity, args["input"].(model.UpdateShopOwner)), true
 
+	case "Mutation.uploadFoodImages":
+		if e.complexity.Mutation.UploadFoodImages == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_uploadFoodImages_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UploadFoodImages(childComplexity, args["input"].([]*model.UploadImage)), true
+
 	case "Query.categories":
 		if e.complexity.Query.Categories == nil {
 			break
@@ -798,6 +812,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputupdateShop,
 		ec.unmarshalInputupdateShopLocation,
 		ec.unmarshalInputupdateShopOwner,
+		ec.unmarshalInputuploadImage,
 	)
 	first := true
 
@@ -1094,6 +1109,21 @@ func (ec *executionContext) field_Mutation_updateShop_args(ctx context.Context, 
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNupdateShop2vᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐUpdateShop(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_uploadFoodImages_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []*model.UploadImage
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNuploadImage2ᚕᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐUploadImageᚄ(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3017,6 +3047,58 @@ func (ec *executionContext) fieldContext_Mutation_deleteFoods(ctx context.Contex
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_deleteFoods_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_uploadFoodImages(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_uploadFoodImages(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UploadFoodImages(rctx, fc.Args["input"].([]*model.UploadImage))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOVoid2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_uploadFoodImages(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Void does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_uploadFoodImages_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -7439,6 +7521,42 @@ func (ec *executionContext) unmarshalInputupdateShopOwner(ctx context.Context, o
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputuploadImage(ctx context.Context, obj interface{}) (model.UploadImage, error) {
+	var it model.UploadImage
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"file", "id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "file":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("file"))
+			it.File, err = ec.unmarshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -7794,6 +7912,12 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteFoods(ctx, field)
+			})
+
+		case "uploadFoodImages":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_uploadFoodImages(ctx, field)
 			})
 
 		default:
@@ -9396,6 +9520,28 @@ func (ec *executionContext) unmarshalNupdateShopLocation2vᚑshiᚋcmdᚋbackᚋ
 func (ec *executionContext) unmarshalNupdateShopOwner2vᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐUpdateShopOwner(ctx context.Context, v interface{}) (model.UpdateShopOwner, error) {
 	res, err := ec.unmarshalInputupdateShopOwner(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNuploadImage2ᚕᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐUploadImageᚄ(ctx context.Context, v interface{}) ([]*model.UploadImage, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*model.UploadImage, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNuploadImage2ᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐUploadImage(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNuploadImage2ᚖvᚑshiᚋcmdᚋbackᚋgraphᚋmodelᚐUploadImage(ctx context.Context, v interface{}) (*model.UploadImage, error) {
+	res, err := ec.unmarshalInputuploadImage(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
