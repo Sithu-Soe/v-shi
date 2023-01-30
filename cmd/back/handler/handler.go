@@ -38,4 +38,7 @@ func (h *Handler) Register() {
 	shopHandler := newShopHandler(h)
 	shopHandler.register()
 
+	// food
+	foodHandler := newFoodHandler(h)
+	foodHandler.register()
 }

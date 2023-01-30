@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option go_package="v-shi/media/v1;mediapb";
+
+message MediaCreateRequest {
+    bytes data = 1;
+    string filePath = 2;
+}
+
+message MediaCreateResponse {
+    string filename = 1;
+}
+
+message DeleteMediaRequest {
+    string fullpath = 1;
+}
+
+service Media {
+    rpc CreateMedia(stream MediaCreateRequest) returns (MediaCreateResponse);
+    rpc DeleteMedia(DeleteMediaRequest) returns (google.protobuf.Empty);
+}
