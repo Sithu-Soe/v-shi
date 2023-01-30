@@ -81,12 +81,13 @@ func (r *shopRepository) FindAllShopLocations(ctx context.Context, input *model.
 func (r *shopRepository) filterToQuery(input *model.FilterShop, tb *gorm.DB) {
 	tb.Table("shops as s")
 	tb.Joins("LEFT JOIN shop_owners so ON so.id = s.shop_owner_id ")
+	tb.Group("s.id")
 	if input.ID != nil {
 		tb.Where("s.id", input.ID)
 	}
 
 	if input.Name != nil {
-		tb.Where("s.name", input.Name)
+		tb.Where("s.name LIKE ?", "%"+*input.Name+"%")
 	}
 
 	if input.StartTime != nil && input.EndTime != nil {
@@ -98,23 +99,24 @@ func (r *shopRepository) filterToQuery(input *model.FilterShop, tb *gorm.DB) {
 	}
 
 	if input.ShopOwnerName != nil {
-		tb.Where("so.name", input.ShopOwnerName)
+		tb.Where("so.name LIKE ?", "%"+*input.ShopOwnerName+"%")
 	}
 }
 
 func (r *shopRepository) filterToQueryShopLocation(input *model.FilterShopLocation, tb *gorm.DB) {
 	tb.Table("shop_locations as sl")
 	tb.Joins("LEFT JOIN shops s ON s.id = sl.shop_id")
+	tb.Group("sl.id")
 	if input.ID != nil {
 		tb.Where("sl.id", input.ID)
 	}
 
 	if input.Name != nil {
-		tb.Where("sl.name", input.Name)
+		tb.Where("sl.name LIKE ?", "%"+*input.Name+"%")
 	}
 
 	if input.Description != nil {
-		tb.Where("sl.name", input.Description)
+		tb.Where("sl.description LIKE ?", "%"+*input.Description+"%")
 	}
 
 	if input.StartTime != nil && input.EndTime != nil {
@@ -134,7 +136,7 @@ func (r *shopRepository) filterToQueryShopLocation(input *model.FilterShopLocati
 	}
 
 	if input.ShopName != nil {
-		tb.Where("s.name", input.ShopName)
+		tb.Where("s.name LIKE ?", "%"+*input.ShopName+"%")
 	}
 }
 

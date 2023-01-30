@@ -50,6 +50,7 @@ func (r *shopOwnerRepository) DeleteMany(ctx context.Context, ids string) error 
 func (r *shopOwnerRepository) filterToQuery(input *model.FilterShopOwner, tb *gorm.DB) {
 	tb.Table("shop_owners as so")
 	tb.Joins("LEFT JOIN shops s ON so.id = s.shop_owner_id ")
+	tb.Group("so.id")
 	if input.ID != nil {
 		tb.Where("so.id", input.ID)
 	}
@@ -59,7 +60,7 @@ func (r *shopOwnerRepository) filterToQuery(input *model.FilterShopOwner, tb *go
 	}
 
 	if input.Name != nil {
-		tb.Where("so.name", input.Name)
+		tb.Where("so.name LIKE ?", "%"+*input.Name+"%")
 	}
 
 	if input.ShopID != nil {
@@ -67,6 +68,6 @@ func (r *shopOwnerRepository) filterToQuery(input *model.FilterShopOwner, tb *go
 	}
 
 	if input.ShopName != nil {
-		tb.Where("s.name", input.ShopName)
+		tb.Where("s.name LIKE ?", "%"+*input.ShopName+"%")
 	}
 }

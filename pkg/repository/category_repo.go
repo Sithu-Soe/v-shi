@@ -64,12 +64,13 @@ func (r *categoryRepository) filterToQuery(input *model.FilterCategory, tb *gorm
 	tb.Table("categories as c")
 	tb.Joins("LEFT JOIN categories_foods cf ON cf.category_id = c.id")
 	tb.Joins("LEFT JOIN foods f ON cf.food_id = f.id")
+	tb.Group("c.id")
 	if input.ID != nil {
 		tb.Where("s.id", input.ID)
 	}
 
 	if input.Name != nil {
-		tb.Where("s.name", input.Name)
+		tb.Where("s.name LIKE ?", "%"+*input.Name+"%")
 	}
 
 	if input.StartTime != nil && input.EndTime != nil {
@@ -81,7 +82,7 @@ func (r *categoryRepository) filterToQuery(input *model.FilterCategory, tb *gorm
 	}
 
 	if input.FoodName != nil {
-		tb.Where("f.name", input.FoodName)
+		tb.Where("f.name LIKE ?", "%"+*input.FoodName+"%")
 	}
 }
 

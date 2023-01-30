@@ -294,7 +294,6 @@ func (r *mutationResolver) DeleteShopLocations(ctx context.Context, ids []int) (
 
 // CreateFood is the resolver for the createFood field.
 func (r *mutationResolver) CreateFood(ctx context.Context, input model.CreateFood) (*string, error) {
-
 	if len(input.CategoryIds) != 0 {
 		total, err := r.Repo.Category.Count(ctx, utils.IdsIntToInCon(input.CategoryIds))
 		if err != nil {
@@ -326,7 +325,7 @@ func (r *mutationResolver) CreateFood(ctx context.Context, input model.CreateFoo
 		})
 	}
 
-	if err := r.Repo.Food.Create(ctx, &food, categories); err != nil {
+	if err := r.Repo.Food.CreateWithCategories(ctx, &food, categories); err != nil {
 		return nil, err
 	}
 
@@ -451,8 +450,20 @@ func (r *queryResolver) ShopLocations(ctx context.Context, input model.FilterSho
 
 // Foods is the resolver for the foods field.
 func (r *queryResolver) Foods(ctx context.Context, input model.FilterFood) (*model.FoodListResponse, error) {
-	// r.Repo.
-	panic("hehe")
+	foods, total, err := r.Repo.Food.FindAll(ctx, &input)
+	if err != nil {
+		return nil, err
+	}
+
+	list := make([]*model.Food, 0)
+	if err := copier.Copy(&list, &foods); err != nil {
+		return nil, err
+	}
+
+	return &model.FoodListResponse{
+		List:  list,
+		Total: int(total),
+	}, nil
 }
 
 // FileLogo is the resolver for the FileLogo field.

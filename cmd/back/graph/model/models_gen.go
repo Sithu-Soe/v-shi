@@ -130,6 +130,8 @@ type FilterFood struct {
 	ID           *int    `json:"id"`
 	Name         *string `json:"name"`
 	Description  *string `json:"description"`
+	StartTime    *string `json:"start_time"`
+	EndTime      *string `json:"end_time"`
 	ShopID       *int    `json:"shop_id"`
 	ShopName     *string `json:"shop_name"`
 	CategoryID   *int    `json:"category_id"`

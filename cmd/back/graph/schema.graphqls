@@ -213,6 +213,8 @@ input filterFood {
   id: Int
   name: String
   description: String
+  start_time: String
+  end_time: String
   shop_id: Int
   shop_name: String
   category_id: Int
