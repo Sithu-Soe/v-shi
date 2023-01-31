@@ -394,6 +394,59 @@ func (r *mutationResolver) UploadFoodImages(ctx context.Context, input []*model.
 		if err := utils.UploadImageWithGQL(ctx, fullPath, &food.File); err != nil {
 			return nil, err
 		}
+
+		// stream, err := r.MediaSvc.Client.CreateMedia(ctx)
+		// if err != nil {
+		// 	log.Println(err)
+		// 	return nil, err
+		// }
+
+		// // send chunk by chunk
+		// buf := make([]byte, 1024)
+
+		// isFirst := true
+
+		// // fi := food.File.File
+		// for {
+		// 	n, err := food.File.File.Read(buf)
+		// 	if err != nil && err != io.EOF {
+		// 		log.Println(err)
+		// 		return nil, err
+		// 	}
+
+		// 	if n == 0 {
+		// 		break
+		// 	}
+
+		// 	req := &mediapb.MediaCreateRequest{
+		// 		Data: buf[:n], //get every element from buf
+		// 	}
+
+		// 	if isFirst {
+		// 		req.FilePath = miio.FoodImagePath
+		// 		req.Prefix = "F"
+		// 		req.Ext = filepath.Ext(food.File.Filename)
+		// 		isFirst = false
+		// 	}
+
+		// 	log.Println("HERE TOOO")
+		// 	if err := stream.Send(req); err != nil {
+		// 		log.Println(err)
+		// 		return nil, err
+		// 	}
+		// }
+
+		// response, err := stream.CloseAndRecv()
+		// if err != nil {
+		// 	return nil, err
+		// }
+
+		// filesInfo = append(filesInfo, &dto.FileUploadInfo{
+		// 	ID:       uint64(food.ID),
+		// 	FullPath: miio.FoodImagePath,
+		// 	Filename: response.GetFilename(),
+		// })
+
 	}
 
 	foodImages := make([]*models.FoodImage, 0)

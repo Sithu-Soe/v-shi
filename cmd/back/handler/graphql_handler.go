@@ -3,6 +3,7 @@ package handler
 import (
 	"v-shi/cmd/back/graph"
 	"v-shi/pkg/repository"
+	"v-shi/pkg/service"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -10,14 +11,16 @@ import (
 )
 
 type graphqlHandler struct {
-	R    *gin.Engine
-	repo *repository.Repository
+	R        *gin.Engine
+	repo     *repository.Repository
+	mediaSvc *service.MediaService
 }
 
 func newGraphqlHandler(h *Handler) *graphqlHandler {
 	return &graphqlHandler{
-		R:    h.R,
-		repo: h.repo,
+		R:        h.R,
+		repo:     h.repo,
+		mediaSvc: h.mediaSvc,
 	}
 }
 
@@ -31,8 +34,9 @@ func (ctr *graphqlHandler) register() {
 // Defining the Graphql handler
 func (ctr *graphqlHandler) serveGraphQL(c *gin.Context) {
 	handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
-		Repo: ctr.repo,
-		DB:   ctr.repo.DS.DB,
+		Repo:     ctr.repo,
+		DB:       ctr.repo.DS.DB,
+		MediaSvc: ctr.mediaSvc,
 	}})).ServeHTTP(c.Writer, c.Request)
 }
 

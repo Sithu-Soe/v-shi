@@ -4,6 +4,7 @@ import (
 	"v-shi/pkg/ds"
 	"v-shi/pkg/middleware"
 	"v-shi/pkg/repository"
+	"v-shi/pkg/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,6 +12,9 @@ import (
 type Handler struct {
 	R    *gin.Engine
 	repo *repository.Repository
+
+	// sevice
+	mediaSvc *service.MediaService
 }
 type HConfig struct {
 	R  *gin.Engine
@@ -22,8 +26,9 @@ func NewHandler(c *HConfig) *Handler {
 		DS: c.DS,
 	})
 	return &Handler{
-		R:    c.R,
-		repo: repo,
+		R:        c.R,
+		repo:     repo,
+		mediaSvc: service.NewMediaServer(),
 	}
 }
 
